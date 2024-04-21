@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Ray\Aop;
 
 use PHPUnit\Framework\TestCase;
+use Ray\Aop\ParserFactory;
 
 class ParserFactoryTest extends TestCase
 {

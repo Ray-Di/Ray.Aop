@@ -2,11 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Ray\Aop;
 
 use PhpParser\BuilderFactory;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
+use Ray\Aop\AopClass;
+use Ray\Aop\AopClassName;
+use Ray\Aop\Bind;
+use Ray\Aop\Code;
+use Ray\Aop\CodeGen;
+use Ray\Aop\FakePhp71NullableClass;
+use Ray\Aop\ParserFactory;
+use Ray\Aop\VisitorFactory;
 
 class CodeGenPhp71Test extends TestCase
 {

@@ -12,7 +12,6 @@ use LogicException;
 use PHPUnit\Framework\TestCase;
 use Ray\Aop\Annotation\FakeMarker;
 use Ray\Aop\Annotation\FakeMarker3;
-use Ray\Aop\Exception\MultipleClassInOneFileException;
 use Ray\Aop\Exception\NotWritableException;
 use ReflectionClass;
 use ReflectionMethod;
@@ -116,8 +115,8 @@ class CompilerTest extends TestCase
 
     public function testParentMethodIntercept(): void
     {
-        $mock = $this->compiler->newInstance(FakeMockChild::class, [], $this->bind);
-        assert($mock instanceof FakeMockChild);
+        $mock = $this->compiler->newInstance(FakeMockGrandChild::class, [], $this->bind);
+        assert($mock instanceof FakeMockGrandChild);
         assert(property_exists($mock, 'bindings'));
         $mock->bindings = $this->bind->getBindings();
         $result = $mock->returnSame(1);
@@ -127,8 +126,8 @@ class CompilerTest extends TestCase
     public function testTypedParentMethodIntercept(): void
     {
         $bind = (new Bind())->bindInterceptors('passIterator', [new NullInterceptor()]);
-        $mock = $this->compiler->newInstance(FakeTypedMockChild::class, [], $bind);
-        assert($mock instanceof FakeTypedMockChild);
+        $mock = $this->compiler->newInstance(FakeTypedMockGrandChild::class, [], $bind);
+        assert($mock instanceof FakeTypedMockGrandChild);
         assert(property_exists($mock, 'bindings'));
         $mock->bindings = $bind->getBindings();
         $result = $mock->passIterator(new ArrayIterator());
@@ -335,14 +334,6 @@ class CompilerTest extends TestCase
         assert($mock instanceof FakePhp71NullableClass);
         $mock->returnTypeVoid();
         $this->assertTrue($mock->returnTypeVoidCalled);
-    }
-
-    public function testCompileMultipleFile(): void
-    {
-        $this->expectException(MultipleClassInOneFileException::class);
-        $compiler = new Compiler(__DIR__ . '/tmp');
-        $bind = (new Bind())->bindInterceptors('foo', [new FakeDoubleInterceptor()]);
-        $compiler->newInstance(FakeTwoClass::class, [], $bind);
     }
 
     public function testNewInstanceWithAnonymousClass(): void

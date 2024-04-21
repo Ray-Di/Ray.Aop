@@ -40,6 +40,15 @@ class BindTest extends TestCase
         $this->assertSame($this->bind->getBindings()['getDouble'], $interceptors);
     }
 
+    public function testBindWithConstructor(): void
+    {
+        $interceptors = [new FakeDoubleInterceptor()];
+        $pointcut = new Pointcut((new Matcher())->startsWith('Ray'), (new Matcher())->startsWith('get'), $interceptors);
+        $this->bind->bind(FakeConstructorClass::class, [$pointcut]);
+        $this->assertArrayHasKey('getDouble', $this->bind->getBindings());
+        $this->assertSame($this->bind->getBindings()['getDouble'], $interceptors);
+    }
+
     public function testBindUnmatched(): void
     {
         $interceptors = [new FakeDoubleInterceptor()];

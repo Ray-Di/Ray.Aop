@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ray\Aop;
 
 use Ray\ServiceLocator\ServiceLocator;
+use ReturnTypeWillChange;
 
 use function get_class_methods;
 
@@ -73,5 +74,18 @@ class ReflectionClass extends \ReflectionClass implements Reader
         }
 
         return new ReflectionMethod($parent->class, $parent->name);
+    }
+
+    /**
+     * @return ReflectionClass<object>|false
+     *
+     * @psalm-external-mutation-free
+     */
+    #[ReturnTypeWillChange]
+    public function getParentClass()
+    {
+        $parent = \ReflectionClass::getParentClass();
+
+        return $parent instanceof \ReflectionClass ? (new ReflectionClass($parent->getName())) : false;
     }
 }

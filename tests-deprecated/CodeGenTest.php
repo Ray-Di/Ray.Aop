@@ -2,13 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Ray\Aop;
 
 use PhpParser\BuilderFactory;
 use PHPUnit\Framework\TestCase;
+use Ray\Aop\AopClass;
+use Ray\Aop\AopClassName;
+use Ray\Aop\Bind;
+use Ray\Aop\CodeGen;
 use Ray\Aop\Exception\InvalidSourceClassException;
-use ReflectionClass;
-use stdClass;
+use Ray\Aop\FakePhp7Class;
+use Ray\Aop\FakePhp7ReturnTypeClass;
+use Ray\Aop\ParserFactory;
+use Ray\Aop\VisitorFactory;
 
 class CodeGenTest extends TestCase
 {

@@ -10,10 +10,7 @@ use function call_user_func_array;
 
 trait InterceptTrait
 {
-    /** @var array<string, string> */
-    private $bind;
-
-    /** @var array<string, string> */
+    /** @var array<string, array<class-string<MethodInterceptor>>> */
     public $bindings = [];
 
     /** @var bool */
@@ -26,7 +23,7 @@ trait InterceptTrait
      *
      * @SuppressWarnings(PHPMD.CamelCaseMethodName)
      */
-    private function _intercept(array $args, string $func) // phpcs:ignore
+    private function _intercept(string $func, array $args) // phpcs:ignore
     {
         if (! $this->isAspect) {
             $this->isAspect = true;

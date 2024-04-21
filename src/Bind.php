@@ -39,6 +39,10 @@ final class Bind implements BindInterface
         $reflectionClass = new ReflectionClass($class);
         $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
         foreach ($methods as $method) {
+            if ($method->getName() === '__construct') {
+                continue;
+            }
+
             $rayMethod = new ReflectionMethod($reflectionClass->getName(), $method->getName());
             ($this->methodMatch)($reflectionClass, $rayMethod, $pointcuts);
         }

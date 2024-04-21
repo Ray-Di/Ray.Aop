@@ -21,9 +21,11 @@ final class AnyMatcher extends AbstractMatcher
     {
         parent::__construct();
 
-        if (self::$builtinMethods === []) {
-            $this->setBuildInMethods();
+        if (self::$builtinMethods !== []) {
+            return;
         }
+
+        $this->setBuildInMethods();
     }
 
     /**

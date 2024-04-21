@@ -5,7 +5,8 @@
     xmlns="https://getpsalm.org/schema/config"
     xsi:schemaLocation="https://getpsalm.org/schema/config https://psalm.dev/schema/config"
     findUnusedBaselineEntry="true"
-    findUnusedCode="false"
+    phpVersion="8.2"
+    findUnusedCode = "false"
 >
     <projectFiles>
         <directory name="sl-src" />
