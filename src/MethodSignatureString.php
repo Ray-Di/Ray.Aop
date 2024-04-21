@@ -10,6 +10,7 @@ use ReflectionParameter;
 
 use function implode;
 use function is_numeric;
+use function is_string;
 use function preg_replace;
 use function sprintf;
 use function str_replace;
@@ -40,7 +41,7 @@ final class MethodSignatureString
 
         // PHPDocを取得
         $docComment = $method->getDocComment();
-        if ($docComment) {
+        if (is_string($docComment)) {
             $signatureParts[] = $docComment . PHP_EOL;
         }
 

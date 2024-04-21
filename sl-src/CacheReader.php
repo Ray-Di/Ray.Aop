@@ -15,6 +15,7 @@ use function array_map;
 use function array_merge;
 use function assert;
 use function filemtime;
+use function is_string;
 use function max;
 use function rawurlencode;
 
@@ -161,7 +162,7 @@ final class CacheReader implements Reader
         $parent = $class->getParentClass();
 
         $lastModification =  max(array_merge(
-            [$filename ? filemtime($filename) : 0],
+            [is_string($filename) ? filemtime($filename) : 0],
             array_map(function (ReflectionClass $reflectionTrait): int {
                 return $this->getTraitLastModificationTime($reflectionTrait);
             }, $class->getTraits()),
@@ -185,7 +186,7 @@ final class CacheReader implements Reader
         }
 
         $lastModificationTime = max(array_merge(
-            [$fileName ? filemtime($fileName) : 0],
+            [is_string($fileName) ? filemtime($fileName) : 0],
             array_map(function (ReflectionClass $reflectionTrait): int {
                 return $this->getTraitLastModificationTime($reflectionTrait);
             }, $reflectionTrait->getTraits())
