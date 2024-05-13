@@ -39,7 +39,7 @@ final class TypeString
         if ($type instanceof ReflectionNamedType) {
             $typeStr = self::getFqnType($type);
             // Check for Nullable in single types
-            if ($type->allowsNull() && $type->getName() !== 'null') {
+            if ($typeStr !== 'mixed' && $type->allowsNull() && $type->getName() !== 'null') {
                 $typeStr = $this->nullableStr . $typeStr;
             }
 
