@@ -342,4 +342,12 @@ class CompilerTest extends TestCase
         $this->assertInstanceOf(FakeAnonymousClass::class, $mock);
         $this->assertInstanceOf(WeavedInterface::class, $mock);
     }
+
+    /** @requires PHP 8.0 */
+    public function testMethodWithMixedArgument(): void
+    {
+        $mock = $this->compiler->newInstance(FakeMixedParamClass::class, [], $this->bind);
+        $this->assertInstanceOf(FakeMixedParamClass::class, $mock);
+        $this->assertInstanceOf(WeavedInterface::class, $mock);
+    }
 }
