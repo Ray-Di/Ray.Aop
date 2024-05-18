@@ -14,7 +14,7 @@ use Ray\Aop\FakePhp81Enum;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class FakeMarker5
 {
-    public function __construct(private readonly FakePhp81Enum $fruits)
+    public function __construct(public readonly FakePhp81Enum $fruits)
     {
     }
 }
