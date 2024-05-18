@@ -7,6 +7,7 @@ namespace Ray\Aop;
 use Reflection;
 use ReflectionMethod;
 use ReflectionParameter;
+use UnitEnum;
 
 use function implode;
 use function is_numeric;
@@ -53,6 +54,14 @@ final class MethodSignatureString
                 $formattedArgs = [];
 
                 foreach ($argsList as $name => $value) {
+                    if ($value instanceof UnitEnum) {
+                        $formattedValue = preg_replace('/\s+/', ' ', '\\' . var_export($value, true));
+                        $argRepresentation = is_numeric($name) ? $formattedValue : "{$name}: {$formattedValue}";
+                        $formattedArgs[] = $argRepresentation;
+
+                        continue;
+                    }
+
                     $formattedValue = preg_replace('/\s+/', ' ', var_export($value, true));
                     $argRepresentation = is_numeric($name) ? $formattedValue : "{$name}: {$formattedValue}";
                     $formattedArgs[] = $argRepresentation;
