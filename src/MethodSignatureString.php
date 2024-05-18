@@ -55,7 +55,7 @@ final class MethodSignatureString
 
                 foreach ($argsList as $name => $value) {
                     if ($value instanceof UnitEnum) {
-                        $formattedValue = preg_replace('/\s+/', ' ', '\\' . var_export($value, true));
+                        $formattedValue = '\\' . var_export($value, true);
                         $argRepresentation = is_numeric($name) ? $formattedValue : "{$name}: {$formattedValue}";
                         $formattedArgs[] = $argRepresentation;
 
