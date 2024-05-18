@@ -89,6 +89,24 @@ class AopCodeTest extends TestCase
       public function method22()', $code);
     }
 
+    /** @requires PHP 8.1 */
+    public function testVariousMethodSignaturePhp81(): void
+    {
+        $bind = new Bind();
+        for ($i = 200; $i <= 200; $i++) {
+            $bind->bindInterceptors('method' . (string) $i, []);
+        }
+
+        $code = $this->codeGen->generate(new ReflectionClass(FakePhp81Types::class), $bind, '_test');
+        $tempFile = tempnam(sys_get_temp_dir(), 'tmp_') . '.php';
+        file_put_contents($tempFile, $code);
+        require $tempFile;
+        unlink($tempFile);
+        $this->assertTrue(class_exists('\Ray\Aop\FakePhp81Types_test'));
+        $this->assertStringContainsString('#[\\Ray\\Aop\\Annotation\\FakeMarker5(\\Ray\\Aop\\FakePhp81Enum::Apple)]
+      public function method200()', $code);
+    }
+
     /** @requires PHP 8.2 */
     public function testVariousMethodSignaturePhp82(): void
     {
