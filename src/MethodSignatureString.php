@@ -43,54 +43,68 @@ final class MethodSignatureString
      */
     public function get(ReflectionMethod $method): string
     {
-        $signatureParts = [];
+        $signatureParts = $this->getDocComment($method);
+        $this->addAttributes($method, $signatureParts);
+        $this->addAccessModifiers($method, $signatureParts);
+        $this->addMethodSignature($method, $signatureParts);
 
-        // PHPDocを取得
+        return implode(' ', $signatureParts);
+    }
+
+    /** @return array<string> */
+    private function getDocComment(ReflectionMethod $method): array
+    {
         $docComment = $method->getDocComment();
-        if (is_string($docComment)) {
-            $signatureParts[] = $docComment . PHP_EOL;
+
+        return is_string($docComment) ? [$docComment . PHP_EOL] : [];
+    }
+
+    /** @param array<string> $signatureParts */
+    private function addAttributes(ReflectionMethod $method, array &$signatureParts): void
+    {
+        if (PHP_MAJOR_VERSION < 8) {
+            return;
         }
 
-        // アトリビュートを取得 (PHP 8.0+ の場合のみ)
-        if (PHP_MAJOR_VERSION >= 8) {
-            /** @psalm-suppress MixedAssignment */
-            foreach ($method->getAttributes() as $attribute) {
-                $argsList = $attribute->getArguments();
-                $formattedArgs = [];
-
-                foreach ($argsList as $name => $value) {
-                    $formattedArgs[] = $this->representArg($name, $value);
-                }
-
-                $signatureParts[] = sprintf('    #[\\%s(%s)]', $attribute->getName(), implode(', ', $formattedArgs)) . PHP_EOL;
+        /** @psalm-suppress MixedAssignment */
+        foreach ($method->getAttributes() as $attribute) {
+            $argsList = $attribute->getArguments();
+            $formattedArgs = [];
+            foreach ($argsList as $name => $value) {
+                $formattedArgs[] = $this->representArg($name, $value);
             }
+
+            $signatureParts[] = sprintf('    #[\\%s(%s)]', $attribute->getName(), implode(', ', $formattedArgs)) . PHP_EOL;
         }
 
-        if ($signatureParts) {
-            $signatureParts[] = self::INDENT;
+        if (empty($signatureParts)) {
+            return;
         }
 
-        // アクセス修飾子を取得
+        $signatureParts[] = self::INDENT;
+    }
+
+    /** @param array<string> $signatureParts */
+    private function addAccessModifiers(ReflectionMethod $method, array &$signatureParts): void
+    {
         $modifier = implode(' ', Reflection::getModifierNames($method->getModifiers()));
-        $signatureParts[] = $modifier;
 
-        // メソッド名とパラメータを取得
+        $signatureParts[] = $modifier;
+    }
+
+    /** @param array<string> $signatureParts */
+    private function addMethodSignature(ReflectionMethod $method, array &$signatureParts): void
+    {
         $params = [];
         foreach ($method->getParameters() as $param) {
             $params[] = $this->generateParameterCode($param);
         }
 
-        $returnType = '';
-        $rType = $method->getReturnType();
-        if ($rType) {
-            $returnType = ': ' . ($this->typeString)($rType);
-        }
-
         $parmsList = implode(', ', $params);
+        $rType = $method->getReturnType();
+        $return = $rType ? ': ' . ($this->typeString)($rType) : '';
 
-        $signatureParts[] = sprintf('function %s(%s)%s', $method->getName(), $parmsList, $returnType);
-
-        return implode(' ', $signatureParts);
+        $signatureParts[] = sprintf('function %s(%s)%s', $method->getName(), $parmsList, $return);
     }
 
     /**
@@ -110,13 +124,8 @@ final class MethodSignatureString
     {
         $typeStr = ($this->typeString)($param->getType());
         $typeStrWithSpace = $typeStr ? $typeStr . ' ' : $typeStr;
-        // Variadicのチェック
         $variadicStr = $param->isVariadic() ? '...' : '';
-
-        // 参照渡しのチェック
         $referenceStr = $param->isPassedByReference() ? '&' : '';
-
-        // デフォルト値のチェック
         $defaultStr = '';
         if ($param->isDefaultValueAvailable()) {
             $default = var_export($param->getDefaultValue(), true);
