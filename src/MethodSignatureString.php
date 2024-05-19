@@ -54,17 +54,7 @@ final class MethodSignatureString
                 $formattedArgs = [];
 
                 foreach ($argsList as $name => $value) {
-                    if ($value instanceof UnitEnum) {
-                        $formattedValue = '\\' . var_export($value, true);
-                        $argRepresentation = is_numeric($name) ? $formattedValue : "{$name}: {$formattedValue}";
-                        $formattedArgs[] = $argRepresentation;
-
-                        continue;
-                    }
-
-                    $formattedValue = preg_replace('/\s+/', ' ', var_export($value, true));
-                    $argRepresentation = is_numeric($name) ? $formattedValue : "{$name}: {$formattedValue}";
-                    $formattedArgs[] = $argRepresentation;
+                    $formattedArgs[] = $this->representArg($name, $value);
                 }
 
                 $signatureParts[] = sprintf('    #[\\%s(%s)]', $attribute->getName(), implode(', ', $formattedArgs)) . PHP_EOL;
@@ -96,6 +86,23 @@ final class MethodSignatureString
         $signatureParts[] = sprintf('function %s(%s)%s', $method->getName(), $parmsList, $returnType);
 
         return implode(' ', $signatureParts);
+    }
+
+    /**
+     * @param string|int $name
+     * @param mixed      $value
+     */
+    private function representArg($name, $value): string
+    {
+        if ($value instanceof UnitEnum) {
+            $formattedValue = '\\' . var_export($value, true);
+
+            return is_numeric($name) ? $formattedValue : "{$name}: {$formattedValue}";
+        }
+
+        $formattedValue = preg_replace('/\s+/', ' ', var_export($value, true));
+
+        return is_numeric($name) ? $formattedValue : "{$name}: {$formattedValue}";
     }
 
     public function generateParameterCode(ReflectionParameter $param): string
