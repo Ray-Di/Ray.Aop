@@ -70,7 +70,7 @@ final class MethodSignatureString
             $argsList = $attribute->getArguments();
             $formattedArgs = [];
             foreach ($argsList as $name => $value) {
-                $formattedArgs[] = $this->representArg($name, $value);
+                $formattedArgs[] = $this->formatArg($name, $value);
             }
 
             $signatureParts[] = sprintf('    #[\\%s(%s)]', $attribute->getName(), implode(', ', $formattedArgs)) . PHP_EOL;
@@ -110,7 +110,7 @@ final class MethodSignatureString
      * @param string|int $name
      * @param mixed      $value
      */
-    private function representArg($name, $value): string
+    private function formatArg($name, $value): string
     {
         $formattedValue = $value instanceof UnitEnum ?
             '\\' . var_export($value, true)
