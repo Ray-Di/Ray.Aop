@@ -119,7 +119,7 @@ final class MethodSignatureString
         return is_numeric($name) ? $formattedValue : "{$name}: {$formattedValue}";
     }
 
-    public function generateParameterCode(ReflectionParameter $param): string
+    private function generateParameterCode(ReflectionParameter $param): string
     {
         $typeStr = ($this->typeString)($param->getType());
         $typeStrWithSpace = $typeStr ? $typeStr . ' ' : $typeStr;
