@@ -94,13 +94,9 @@ final class MethodSignatureString
      */
     private function representArg($name, $value): ?string
     {
-        if ($value instanceof UnitEnum) {
-            $formattedValue = '\\' . var_export($value, true);
-
-            return is_numeric($name) ? $formattedValue : "{$name}: {$formattedValue}";
-        }
-
-        $formattedValue = preg_replace('/\s+/', ' ', var_export($value, true));
+        $formattedValue = $value instanceof UnitEnum ?
+            '\\' . var_export($value, true)
+            : preg_replace('/\s+/', ' ', var_export($value, true));
 
         return is_numeric($name) ? $formattedValue : "{$name}: {$formattedValue}";
     }
