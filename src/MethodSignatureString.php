@@ -116,7 +116,7 @@ final class MethodSignatureString
             '\\' . var_export($value, true)
             : preg_replace('/\s+/', ' ', var_export($value, true));
 
-        return is_numeric($name) ? $formattedValue : "{$name}: {$formattedValue}";
+        return is_numeric($name) ? (string) $formattedValue : "{$name}: {$formattedValue}";
     }
 
     private function generateParameterCode(ReflectionParameter $param): string
