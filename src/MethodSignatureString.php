@@ -92,7 +92,7 @@ final class MethodSignatureString
      * @param string|int $name
      * @param mixed      $value
      */
-    private function representArg($name, $value): string
+    private function representArg($name, $value): ?string
     {
         if ($value instanceof UnitEnum) {
             $formattedValue = '\\' . var_export($value, true);
