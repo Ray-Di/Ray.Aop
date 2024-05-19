@@ -20,7 +20,6 @@ use function var_export;
 use const PHP_EOL;
 use const PHP_MAJOR_VERSION;
 
-/** @SuppressWarnings(PHPMD.CyclomaticComplexity) */
 final class MethodSignatureString
 {
     private const PHP_VERSION_8 = 80000;
