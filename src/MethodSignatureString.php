@@ -23,12 +23,17 @@ use const PHP_MAJOR_VERSION;
 /** @SuppressWarnings(PHPMD.CyclomaticComplexity) */
 final class MethodSignatureString
 {
+    private const PHP_VERSION_8 = 80000;
+    private const NULLABLE_PHP8 = 'null|';
+    private const NULLABLE_PHP7 = '?';
+    private const INDENT = '    ';
+
     /** @var TypeString */
     private $typeString;
 
     public function __construct(int $phpVersion)
     {
-        $nullableStr = $phpVersion >= 80000 ? 'null|' : '?';
+        $nullableStr = $phpVersion >= self::PHP_VERSION_8 ? self::NULLABLE_PHP8 : self::NULLABLE_PHP7;
         $this->typeString = new TypeString($nullableStr);
     }
 
@@ -62,7 +67,7 @@ final class MethodSignatureString
         }
 
         if ($signatureParts) {
-            $signatureParts[] = '    '; // インデント追加
+            $signatureParts[] = self::INDENT;
         }
 
         // アクセス修飾子を取得
