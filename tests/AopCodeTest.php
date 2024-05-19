@@ -49,7 +49,7 @@ class AopCodeTest extends TestCase
     public function testVariousMethodSignature(): void
     {
         $bind = new Bind();
-        for ($i = 1; $i <= 23; $i++) {
+        for ($i = 1; $i <= 24; $i++) {
             $bind->bindInterceptors('method' . (string) $i, []);
         }
 
@@ -89,6 +89,8 @@ class AopCodeTest extends TestCase
       public function method22()', $code);
         $this->assertStringContainsString('#[\\Ray\\Aop\\Annotation\\FakeMarker5(\\Ray\\Aop\\FakePhp81Enum::Apple)]
       public function method23()', $code);
+        $this->assertStringContainsString('#[\\Ray\\Aop\\Annotation\\FakeMarker6(fruit1: \\Ray\\Aop\\FakePhp81Enum::Apple, fruit2: \\Ray\\Aop\\FakePhp81Enum::Orange)]
+      public function method24()', $code);
     }
 
     /** @requires PHP 8.2 */
