@@ -61,10 +61,11 @@ final class MethodSignatureString
             return;
         }
 
-        /** @psalm-suppress MixedAssignment */
-        foreach ($method->getAttributes() as $attribute) {
+        $attributes = $method->getAttributes();
+        foreach ($attributes as $attribute) {
             $argsList = $attribute->getArguments();
             $formattedArgs = [];
+            /** @var mixed $value */
             foreach ($argsList as $name => $value) {
                 $formattedArgs[] = $this->formatArg($name, $value);
             }
