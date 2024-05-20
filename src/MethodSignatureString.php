@@ -36,10 +36,6 @@ final class MethodSignatureString
         $this->typeString = new TypeString($nullableStr);
     }
 
-    /**
-     * @psalm-suppress MixedArgument
-     * @psalm-suppress MixedMethodCall
-     */
     public function get(ReflectionMethod $method): string
     {
         $signatureParts = $this->getDocComment($method);
@@ -114,7 +110,7 @@ final class MethodSignatureString
     {
         $formattedValue = $value instanceof UnitEnum ?
             '\\' . var_export($value, true)
-            : preg_replace('/\s+/', ' ', var_export($value, true));
+            : preg_replace('/\s+/', '', var_export($value, true));
 
         return is_numeric($name) ? (string) $formattedValue : "{$name}: {$formattedValue}";
     }

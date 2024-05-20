@@ -83,7 +83,7 @@ class AopCodeTest extends TestCase
         $this->assertStringContainsString('    /**
      * PHPDoc
      */
-     #[\\Ray\\Aop\\Annotation\\FakeMarker4(array ( 0 => 1, 1 => 2, ), 3)]
+     #[\\Ray\\Aop\\Annotation\\FakeMarker4(array(0=>1,1=>2,), 3)]
       public function method21()', $code);
         $this->assertStringContainsString('#[\\Ray\\Aop\\Annotation\\FakeMarkerName(a: 1, b: \'string\', c: true)]
       public function method22()', $code);
