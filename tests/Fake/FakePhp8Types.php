@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Ray\Aop;
 
 use Ray\Aop\Annotation\FakeMarker4;
+use Ray\Aop\Annotation\FakeMarker5;
+use Ray\Aop\Annotation\FakeMarker6;
 use Ray\Aop\Annotation\FakeMarkerName;
 
 class FakePhp8Types implements FakeNullInterface, \Ray\Aop\FakeNullInterface1
@@ -62,4 +64,9 @@ class FakePhp8Types implements FakeNullInterface, \Ray\Aop\FakeNullInterface1
     #[FakeMarkerName(a: 1, b: 'string', c:true)]
     public function method22() {}
 
+    #[FakeMarker5(FakePhp81Enum::Apple)]
+    public function method23() {}
+
+    #[FakeMarker6(fruit1: FakePhp81Enum::Apple, fruit2: FakePhp81Enum::Orange)]
+    public function method24() {}
 }
