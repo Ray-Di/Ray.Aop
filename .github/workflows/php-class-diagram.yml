@@ -28,3 +28,10 @@ jobs:
             name: Class_Diagram
             path: php-class-diagram.svg
             retention-days: 5
+
+        - name: Deploy
+          uses: peaceiris/actions-gh-pages@v3
+          with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: ${{ steps.pcd.outputs.dir}}
+            destination_dir: ${{ steps.pcd.outputs.dir}}
