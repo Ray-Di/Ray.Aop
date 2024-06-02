@@ -286,3 +286,7 @@ SevericeLocator::setReader(new AttributeReader);`
 ---
 
 * Note: This documentation of the most part is taken from [Guice/AOP](https://github.com/google/guice/wiki/AOP).
+
+## Technical Documents
+
+- [PHP class diagram](https://koriym.github.io/Ray.Aop/php-class-diagram.svg)
