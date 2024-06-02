@@ -38,3 +38,4 @@ jobs:
             github_token: ${{ secrets.GITHUB_TOKEN }}
             publish_dir: ./images
             destination_dir: ./images
+            force_orphan: true
