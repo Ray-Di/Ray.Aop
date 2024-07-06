@@ -47,6 +47,7 @@ final class Weaver
         if (! isset($instance->bindings)) {
             return $instance;
         }
+
         assert(isset($instance->bindings));
         $instance->bindings = $this->bind->getBindings();
         assert($instance instanceof $class);

@@ -8,9 +8,9 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
 use ReflectionMethod;
+use RuntimeException;
 
 use function array_slice;
-use function assert;
 use function basename;
 use function count;
 use function end;
@@ -18,11 +18,12 @@ use function extension_loaded;
 use function get_declared_classes;
 use function method_intercept;
 use function strcasecmp;
+use function sys_get_temp_dir;
 
 final class Aspect
 {
-    /** @var string */
-    private $classDir;
+    /** @var string|null */
+    private $tmpDir;
 
     /** @var array<array{classMatcher: AbstractMatcher, methodMatcher: AbstractMatcher, interceptors: array}> */
     private $matchers = [];
@@ -30,9 +31,9 @@ final class Aspect
     /** @var array<string, array<string, array>> */
     private $bound = [];
 
-    public function __construct(string $classDir)
+    public function __construct(?string $tmpDir = null)
     {
-        $this->classDir = $classDir;
+        $this->tmpDir = $tmpDir ?? sys_get_temp_dir();
     }
 
     public function bind(AbstractMatcher $classMatcher, AbstractMatcher $methodMatcher, array $interceptors): void
@@ -44,41 +45,20 @@ final class Aspect
         ];
     }
 
-    public function weave(): void
+    public function weave(string $classDir): void
     {
-        $this->scanAndCompile();
+        if (! extension_loaded('rayaop')) {
+            throw new RuntimeException('Ray.Aop extension is not loaded. Cannot use weave() method.');
+        }
+
+        $this->scanAndCompile($classDir);
         $this->applyInterceptors();
     }
 
-    /**
-     * @template T of object
-     * @param class-string<T> $className
-     * @param array<mixed> $args
-     * @return T
-     */
-    public function newInstance(string $className, array $args = []): object
-    {
-        $bind = new Bind();
-        $class = new ReflectionClass($className);
-
-        foreach ($this->matchers as $matcher) {
-            if ($matcher['classMatcher']->matchesClass($class, $matcher['classMatcher']->getArguments())) {
-                foreach ($class->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                    if ($matcher['methodMatcher']->matchesMethod($method, $matcher['methodMatcher']->getArguments())) {
-                        $bind->bindInterceptors($method->getName(), $matcher['interceptors']);
-                    }
-                }
-            }
-        }
-
-        $weaver = new Weaver($bind, $this->classDir);
-        return $weaver->newInstance($className, $args);
-    }
-
-    private function scanAndCompile(): void
+    private function scanAndCompile(string $classDir): void
     {
         $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($this->classDir)
+            new RecursiveDirectoryIterator($classDir)
         );
 
         foreach ($files as $file) {
@@ -115,20 +95,15 @@ final class Aspect
 
     private function processClass(string $className): void
     {
-        $reflClass = new ReflectionClass($className);
+        $reflection = new ReflectionClass($className);
 
         foreach ($this->matchers as $matcher) {
-            $classMathcer = $matcher['classMatcher'];
-            assert($classMathcer instanceof AbstractMatcher);
-            if (! $classMathcer->matchesClass($reflClass, $classMathcer->getArguments())) {
+            if (! $matcher['classMatcher']->matchesClass($reflection, $matcher['classMatcher']->getArguments())) {
                 continue;
             }
 
-            foreach ($reflClass->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                $methodMatcher = $matcher['methodMatcher'];
-                assert($methodMatcher instanceof AbstractMatcher);
-
-                if (! $methodMatcher->matchesMethod($method, $methodMatcher->getArguments())) {
+            foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+                if (! $matcher['methodMatcher']->matchesMethod($method, $matcher['methodMatcher']->getArguments())) {
                     continue;
                 }
 
@@ -140,14 +115,76 @@ final class Aspect
     private function applyInterceptors(): void
     {
         if (! extension_loaded('rayaop')) {
-            throw new \RuntimeException('Ray.Aop extension is not loaded');
+            throw new RuntimeException('Ray.Aop extension is not loaded');
         }
 
-        $dispacher = new PeclDispatcher($this->bound);
+        $dispatcher = new PeclDispatcher($this->bound);
         foreach ($this->bound as $className => $methods) {
             foreach ($methods as $methodName => $interceptors) {
-                method_intercept($className, $methodName, $dispacher);
+                method_intercept($className, $methodName, $dispatcher);
             }
         }
+    }
+
+    /**
+     * @param class-string<T> $className
+     * @param array<mixed>    $args
+     *
+     * @return T
+     *
+     * @template T of object
+     */
+    public function newInstance(string $className, array $args = []): object
+    {
+        $reflection = new ReflectionClass($className);
+
+        if ($reflection->isFinal() && extension_loaded('rayaop')) {
+            return $this->newInstanceWithPecl($className, $args);
+        }
+
+        return $this->newInstanceWithPhp($className, $args);
+    }
+
+    private function newInstanceWithPecl(string $className, array $args): object
+    {
+        $instance = new $className(...$args);
+        $this->processClass($className);
+        $this->applyInterceptors();
+
+        return $instance;
+    }
+
+    private function newInstanceWithPhp(string $className, array $args): object
+    {
+        if ($this->tmpDir === null) {
+            throw new RuntimeException('Temporary directory is not set. It is required for PHP-based AOP.');
+        }
+
+        $bind = $this->createBind($className);
+        $weaver = new Weaver($bind, $this->tmpDir);
+
+        return $weaver->newInstance($className, $args);
+    }
+
+    private function createBind(string $className): Bind
+    {
+        $bind = new Bind();
+        $reflection = new ReflectionClass($className);
+
+        foreach ($this->matchers as $matcher) {
+            if (! $matcher['classMatcher']->matchesClass($reflection, $matcher['classMatcher']->getArguments())) {
+                continue;
+            }
+
+            foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+                if (! $matcher['methodMatcher']->matchesMethod($method, $matcher['methodMatcher']->getArguments())) {
+                    continue;
+                }
+
+                $bind->bindInterceptors($method->getName(), $matcher['interceptors']);
+            }
+        }
+
+        return $bind;
     }
 }
