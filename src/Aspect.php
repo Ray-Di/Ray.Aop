@@ -58,26 +58,21 @@ final class Aspect
      */
     public function newInstance(string $className, array $args = []): object
     {
-        if (extension_loaded('ray_aop')) {
-            // PECL拡張が利用可能な場合、通常のインスタンス化を行う
-            return new $className(...$args);
-        }
-
-        // PECL拡張がない場合、Weaverを使用してプロキシインスタンスを生成する
-        $bind = $this->createBind($className);
-        $weaver = new Weaver($bind, $this->classDir);
-        return $weaver->newInstance($className, $args);
-    }
-
-    private function createBind(string $className): Bind
-    {
         $bind = new Bind();
-        if (isset($this->bound[$className])) {
-            foreach ($this->bound[$className] as $methodName => $interceptors) {
-                $bind->bindInterceptors($methodName, $interceptors);
+        $class = new ReflectionClass($className);
+
+        foreach ($this->matchers as $matcher) {
+            if ($matcher['classMatcher']->matchesClass($class, $matcher['classMatcher']->getArguments())) {
+                foreach ($class->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+                    if ($matcher['methodMatcher']->matchesMethod($method, $matcher['methodMatcher']->getArguments())) {
+                        $bind->bindInterceptors($method->getName(), $matcher['interceptors']);
+                    }
+                }
             }
         }
-        return $bind;
+
+        $weaver = new Weaver($bind, $this->classDir);
+        return $weaver->newInstance($className, $args);
     }
 
     private function scanAndCompile(): void
