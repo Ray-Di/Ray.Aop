@@ -9,3 +9,4 @@ parameters:
     - tests/tmp/*
     - tests/tmp_unerase/*
     - tests/Fake/*
+    - tests/AspectFake/*

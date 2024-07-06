@@ -14,6 +14,7 @@ use function get_class;
 /** @requires PHP 8.1 */
 class AspectTest extends TestCase
 {
+    /** @var Aspect */
     private $aspect;
 
     protected function setUp(): void

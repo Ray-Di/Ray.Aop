@@ -28,10 +28,6 @@ class PeclDispatcher implements MethodInterceptorInterface
      */
     public function intercept(object $object, string $method, array $params): mixed
     {
-        if (! is_object($object) || ! is_string($method) || ! is_array($params)) {
-            throw new LogicException('Invalid arguments passed to intercept method');
-        }
-
         $class = get_class($object);
         if (! isset($this->interceptors[$class][$method])) {
             throw new LogicException('Interceptors not found');
