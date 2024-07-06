@@ -8,7 +8,7 @@ use LogicException;
 
 use function get_class;
 
-class PeclDispatcher implements InterceptHandlerInterface
+class PeclDispatcher implements MethodInterceptorInterface
 {
     /** @var array<string, Interceptor> */
     public function __construct(private array $interceptors)
