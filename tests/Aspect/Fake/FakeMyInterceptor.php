@@ -6,7 +6,7 @@ namespace Ray\Aop;
 
 class FakeMyInterceptor implements MethodInterceptor
 {
-    public function invoke(MethodInvocation $invocation)
+    public function invoke(MethodInvocation $invocation): string
     {
         // Pre-processing logic
         $result = $invocation->proceed();
