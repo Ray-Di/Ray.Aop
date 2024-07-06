@@ -22,7 +22,7 @@ class AspectTest extends TestCase
     }
 
     /**
-     * @runInSeparateProcess
+     * runInSeparateProcess
      *
      * The isolated process is required to avoid side effects which can be caused by the aspect weaved classes.
      * If you want to use Xdebug for tracing, Remove the annotation `@runInSeparateProcess` and run the test.

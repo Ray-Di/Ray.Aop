@@ -7,22 +7,39 @@ namespace Ray\Aop;
 use LogicException;
 
 use function get_class;
+use function is_array;
+use function is_object;
+use function is_string;
 
 class PeclDispatcher implements MethodInterceptorInterface
 {
-    /** @var array<string, Interceptor> */
+    /** @param array<string, array<string, array<MethodInterceptor>>> $interceptors */
     public function __construct(private array $interceptors)
     {
     }
 
-    /** @inheritDoc */
+    /**
+     * @inheritDoc
+     * @psalm-suppress MethodSignatureMismatch
+     * @psalm-suppress TypeDoesNotContainType
+     * @psalm-suppress MixedArgumentTypeCoercion
+     *
+     * (Psalm seems to have a problem with the signature of this method.)
+     */
     public function intercept(object $object, string $method, array $params): mixed
     {
-        if (! isset($this->interceptors[get_class($object)][$method])) {
+        if (! is_object($object) || ! is_string($method) || ! is_array($params)) {
+            throw new LogicException('Invalid arguments passed to intercept method');
+        }
+
+        $class = get_class($object);
+        if (! isset($this->interceptors[$class][$method])) {
             throw new LogicException('Interceptors not found');
         }
 
-        $interceptors = $this->interceptors[get_class($object)][$method];
+        /** @var array<MethodInterceptor> $interceptors */
+        $interceptors = $this->interceptors[$class][$method];
+
         $invocation = new ReflectiveMethodInvocation($object, $method, $params, $interceptors);
 
         return $invocation->proceed();

@@ -7,6 +7,9 @@ namespace Ray\Aop;
 use function interface_exists;
 
 // The original class defined in the PECL extension.
+
+/** @psalm-suppress UnrecognizedStatement */
+
 if (! interface_exists(MethodInterceptorInterface::class, false)) {
     /**
      * Method Interceptor Interface

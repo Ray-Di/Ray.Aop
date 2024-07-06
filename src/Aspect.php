@@ -9,9 +9,12 @@ use RecursiveIteratorIterator;
 use ReflectionClass;
 use ReflectionMethod;
 use RuntimeException;
+use SplFileInfo;
 
 use function array_slice;
+use function assert;
 use function basename;
+use function class_exists;
 use function count;
 use function end;
 use function extension_loaded;
@@ -25,10 +28,10 @@ final class Aspect
     /** @var string|null */
     private $tmpDir;
 
-    /** @var array<array{classMatcher: AbstractMatcher, methodMatcher: AbstractMatcher, interceptors: array}> */
+    /** @var array<array{classMatcher: AbstractMatcher, methodMatcher: AbstractMatcher, interceptors: array<MethodInterceptor>}> */
     private $matchers = [];
 
-    /** @var array<string, array<string, array>> */
+    /** @var array<string, array<string, array<array-key, MethodInterceptor>>> */
     private $bound = [];
 
     public function __construct(?string $tmpDir = null)
@@ -36,6 +39,7 @@ final class Aspect
         $this->tmpDir = $tmpDir ?? sys_get_temp_dir();
     }
 
+    /** @param array<MethodInterceptor> $interceptors */
     public function bind(AbstractMatcher $classMatcher, AbstractMatcher $methodMatcher, array $interceptors): void
     {
         $this->matchers[] = [
@@ -61,13 +65,14 @@ final class Aspect
             new RecursiveDirectoryIterator($classDir)
         );
 
+        /** @var SplFileInfo[] $files */
         foreach ($files as $file) {
             if ($file->isDir() || $file->getExtension() !== 'php') {
                 continue;
             }
 
             $className = $this->getClassNameFromFile($file->getPathname());
-            if (! $className) {
+            if ($className === null) {
                 continue;
             }
 
@@ -80,6 +85,7 @@ final class Aspect
         $declaredClasses = get_declared_classes();
         $previousCount = count($declaredClasses);
 
+        /** @psalm-suppress UnresolvableInclude */
         require_once $file;
 
         $newClasses = array_slice(get_declared_classes(), $previousCount);
@@ -95,6 +101,7 @@ final class Aspect
 
     private function processClass(string $className): void
     {
+        assert(class_exists($className));
         $reflection = new ReflectionClass($className);
 
         foreach ($this->matchers as $matcher) {
@@ -128,7 +135,7 @@ final class Aspect
 
     /**
      * @param class-string<T> $className
-     * @param array<mixed>    $args
+     * @param list<mixed>     $args
      *
      * @return T
      *
@@ -145,8 +152,17 @@ final class Aspect
         return $this->newInstanceWithPhp($className, $args);
     }
 
+    /**
+     * @param class-string<T> $className
+     * @param array<mixed>    $args
+     *
+     * @return T
+     *
+     * @template T of object
+     */
     private function newInstanceWithPecl(string $className, array $args): object
     {
+        /** @psalm-suppress MixedMethodCall */
         $instance = new $className(...$args);
         $this->processClass($className);
         $this->applyInterceptors();
@@ -154,6 +170,14 @@ final class Aspect
         return $instance;
     }
 
+    /**
+     * @param class-string<T> $className
+     * @param list<mixed>     $args
+     *
+     * @return T
+     *
+     * @template T of object
+     */
     private function newInstanceWithPhp(string $className, array $args): object
     {
         if ($this->tmpDir === null) {
@@ -166,6 +190,7 @@ final class Aspect
         return $weaver->newInstance($className, $args);
     }
 
+    /** @param class-string $className */
     private function createBind(string $className): Bind
     {
         $bind = new Bind();

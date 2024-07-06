@@ -45,10 +45,10 @@ final class Weaver
         $aopClass = $this->weave($class);
         $instance = (new ReflectionClass($aopClass))->newInstanceArgs($args);
         if (! isset($instance->bindings)) {
+            /** @var T $instance  */
             return $instance;
         }
 
-        assert(isset($instance->bindings));
         $instance->bindings = $this->bind->getBindings();
         assert($instance instanceof $class);
 
