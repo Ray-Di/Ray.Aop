@@ -91,10 +91,12 @@ chargeOrder not allowed on weekends!
 
 ## PECL Extension
 
-Ray.Aop also supports a PECL extension for improved performance. When the extension is installed, you can use the `weave` method to apply aspects to all classes in a directory:
+Ray.Aop also supports a [PECL extension](https://github.com/ray-di/ext-rayaop). When the extension is installed, you can use the `weave` method to apply aspects to all classes in a directory:
 
 ```php
 $aspect->weave(__DIR__ . '/src');
+
+$billing = new RealBillingService; // Interceptors applied
 ```
 
 With the PECL extension:
@@ -188,9 +190,9 @@ class MyInterceptor implements MethodInterceptor
 }
 ```
 
-It's important to note that `$invocation->proceed()` doesn't just call the target method directly. Instead, it invokes the next interceptor in the chain. If there are no more interceptors, it then calls the target method. This allows you to apply multiple interceptors to a single method, creating a chain of interceptors that are executed in the order they were bound.
+$invocation->proceed() invokes the next interceptor in the chain. If no more interceptors are present, it calls the target method. This chaining allows multiple interceptors for a single method, executing in the order bound.
 
-For example, if you have bound interceptors A, B, and C to a method, the execution flow would be:
+Example execution flow for interceptors A, B, and C:
 
 1. Interceptor A (before)
 2. Interceptor B (before)
