@@ -2,9 +2,6 @@
 
 declare(strict_types=1);
 
-namespace Ray\Aop;
-
-use function interface_exists;
 
 // The original class defined in the PECL extension.
 

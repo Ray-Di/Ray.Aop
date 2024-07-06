@@ -38,7 +38,12 @@
         "psr-4": {
             "Ray\\Aop\\": ["tests/", "tests/Fake/", "tests/Aspect", "tests/Aspect/Fake", "tests/Aspect/Fake/src"]
         },
-        "files": ["tests/Fake/FakeGlobalNamespaced.php", "tests/Fake/FakeGlobalEmptyNamespaced.php"]
+        "files": [
+            "src-mock/method_intercept.php",
+            "src-mock/MethodInterceptorInterface.php",
+            "tests/Fake/FakeGlobalNamespaced.php",
+            "tests/Fake/FakeGlobalEmptyNamespaced.php"
+        ]
     },
     "suggest": {
         "ray/di": "A dependency injection framework"
