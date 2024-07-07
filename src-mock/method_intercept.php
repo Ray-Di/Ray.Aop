@@ -4,9 +4,8 @@ if (! function_exists('method_intercept')) {
     /**
      * @return mixed
      */
-    function method_intercept(string $class, string $method, array $params, object $object)
+    function method_intercept(string $class, string $method, MethodInterceptorInterface $interceptor)
     {
-        $interceptor = new $class();
-        return $interceptor->intercept($object, $method, $params);
+        unset($class, $method, $interceptor);
     }
 }
