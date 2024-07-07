@@ -1,0 +1,114 @@
+name: Test with Ray.Aop PECL Extension
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php-version: ['8.1', '8.2', '8.3']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: mbstring, intl
+          tools: phpize, composer:v2
+
+      - name: Install build tools and Valgrind
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y autoconf automake libtool bison re2c valgrind
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Build extension
+        id: build_extension
+        run: |
+          git clone https://github.com/ray-di/ext-rayaop.git
+          cd ext-rayaop
+          phpize
+          ./configure
+          make
+
+      - name: PHP info
+        id: php_info
+        run: |
+          php -dextension=./ext-rayaop/modules/rayaop.so -i | grep rayaop
+
+      - name: Run PECL demo with debug logging
+        id: run_pecl_demo
+        run: |
+          timeout 60s php -n -dextension=./ext-rayaop/modules/rayaop.so -dmemory_limit=128M -dreport_memleaks=1 -dzend.assertions=1 -dassert.exception=1 ./ext-rayaop/smoke.php
+        continue-on-error: true
+
+      - name: Check loaded extension
+        id: check_loaded_extension
+        run: |
+          php -dextension=./ext-rayaop/modules/rayaop.so -r 'var_dump(extension_loaded("rayaop"));'
+
+      - name: Check function exists
+        id: check_function_exists
+        run: |
+          php -dextension=./ext-rayaop/modules/rayaop.so -r 'var_dump(function_exists("method_intercept"));'
+
+      - name: Run PHPUnit tests
+        id: run_phpunit_tests
+        run: |
+          php -dextension=./ext-rayaop/modules/rayaop.so vendor/bin/phpunit --coverage-clover=coverage.xml
+
+      - name: Run Valgrind memory check
+        if: steps.build_extension.outcome == 'failure' || steps.run_pecl_demo.outcome == 'failure'
+        run: |
+          cat << EOF > valgrind.supp
+          {
+             <insert_a_suppression_name_here>
+             Memcheck:Leak
+             match-leak-kinds: reachable
+             ...
+             fun:php_module_startup
+             ...
+          }
+          EOF
+          valgrind --suppressions=valgrind.supp --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=valgrind-out.txt php -n -dextension=./ext-rayaop/modules/rayaop.so vendor/bin/phpunit
+
+      - name: Check Valgrind results
+        if: steps.build_extension.outcome == 'failure' || steps.run_pecl_demo.outcome == 'failure'
+        run: |
+          if [ -f valgrind-out.txt ]; then
+            echo "Valgrind log found:"
+            cat valgrind-out.txt
+            if ! grep -q "ERROR SUMMARY: 0 errors from 0 contexts" valgrind-out.txt; then
+              echo "Valgrind found errors"
+              exit 1
+            fi
+          else
+            echo "Valgrind log not found. This is unexpected."
+            exit 1
+          fi
+
+      - name: Upload Valgrind log file
+        if: steps.build_extension.outcome == 'failure' || steps.run_pecl_demo.outcome == 'failure'
+        uses: actions/upload-artifact@v2
+        with:
+          name: valgrind-log
+          path: valgrind-out.txt
+          if-no-files-found: warn
+
+      - name: Final status check
+        if: always()
+        run: |
+          if [[ "${{ steps.build_extension.outcome }}" == 'failure' || "${{ steps.run_pecl_demo.outcome }}" == 'failure' ]]; then
+            echo "Build extension and run failed. Please check the logs for more information."
+            exit 1
+          fi
