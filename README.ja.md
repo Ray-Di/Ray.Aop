@@ -108,6 +108,7 @@ $aspect->bind(
     [new WeekendBlocker()]
 );
 $aspect->weave(__DIR__ . '/src'); // ディレクトリ内でマッチャーに一致するすべてのクラスにアスペクトを織り込みます。
+
 $billing = new RealBillingService();
 echo $billing->chargeOrder(); // インターセプターが適用されます。
 ```

@@ -104,6 +104,7 @@ $aspect->bind(
     [new WeekendBlocker()]
 );
 $aspect->weave(__DIR__ . '/src'); // Weave the aspects to all classes in the directory that match the matcher.
+
 $billing = new RealBillingService();
 echo $billing->chargeOrder(); // Interceptors applied
 ```
