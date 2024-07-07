@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+namespace Ray\Aop;
 
 // The original class defined in the PECL extension.
 
