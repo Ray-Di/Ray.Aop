@@ -8,9 +8,13 @@
 [![Continuous Integration](https://github.com/ray-di/Ray.Aop/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/ray-di/Ray.Aop/actions/workflows/continuous-integration.yml)
 [![Total Downloads](https://poser.pugx.org/ray/aop/downloads)](https://packagist.org/packages/ray/aop)
 
+<img src="https://ray-di.github.io/images/logo.svg" alt="ray-di logo" width="150px;">
+
 [\[Japanese\]](https://github.com/ray-di/Ray.Aop/blob/2.x/README.ja.md)
 
+
 **Ray.Aop** package provides method interception. This feature enables you to write code that is executed each time a matching method is invoked. It's suited for cross cutting concerns ("aspects"), such as transactions, security and logging. Because interceptors divide a problem into aspects rather than objects, their use is called Aspect Oriented Programming (AOP).
+
 
 A [Matcher](https://github.com/ray-di/Ray.Aop/blob/2.x/src/MatcherInterface.php) is a simple interface that either accepts or rejects a value. For Ray.AOP, you need two matchers: one that defines which classes participate, and another for the methods of those classes. To make this easy, there's factory class to satisfy the common scenarios.
 
@@ -60,22 +64,21 @@ class WeekendBlocker implements MethodInterceptor
 }
 ```
 
-Finally, we configure everything. In this case we match any class, but only the methods with our `@NotOnWeekends` annotation:
+```markdown
+Finally, we configure everything using the `Aspect` class:
 
 ```php
-<?php
+use Ray\Aop\Aspect;
+use Ray\Aop\Matcher;
 
-use Ray\Aop\Sample\Annotation\NotOnWeekends;
-use Ray\Aop\Sample\Annotation\RealBillingService;
-
-$pointcut = new Pointcut(
+$aspect = new Aspect();
+$aspect->bind(
     (new Matcher())->any(),
     (new Matcher())->annotatedWith(NotOnWeekends::class),
     [new WeekendBlocker()]
 );
-$bind = (new Bind)->bind(RealBillingService::class, [$pointcut]);
-$billing = (new Weaver($bind, $tmpDir))->newInstance(RealBillingService::class, []);
 
+$billing = $aspect->newInstance(RealBillingService::class);
 try {
     echo $billing->chargeOrder();
 } catch (\RuntimeException $e) {
@@ -90,21 +93,44 @@ Putting it all together, (and waiting until Saturday), we see the method is inte
 chargeOrder not allowed on weekends!
 ```
 
-## Explicit method name match
+## PECL Extension
+
+Ray.Aop also supports a [PECL extension](https://github.com/ray-di/ext-rayaop). When the extension is installed, you can use the `weave` method to apply aspects to all classes in a directory:
 
 ```php
-<?php
-$bind = (new Bind)->bindInterceptors('chargeOrder', [new WeekendBlocker]);
-$compiler = new Weaver($bind, $tmpDir);
-$billing = $compiler->newInstance('RealBillingService', [], $bind);
-try {
-    echo $billing->chargeOrder();
-} catch (\RuntimeException $e) {
-    echo $e->getMessage() . "\n";
-    exit(1);
-}
+$aspect = new Aspect();
+$aspect->bind(
+    (new Matcher())->any(),
+    (new Matcher())->annotatedWith(NotOnWeekends::class),
+    [new WeekendBlocker()]
+);
+$aspect->weave(__DIR__ . '/src'); // Weave the aspects to all classes in the directory that match the matcher.
+$billing = new RealBillingService();
+echo $billing->chargeOrder(); // Interceptors applied
 ```
 
+With the PECL extension:
+- You can create new instances anywhere in your code using the normal `new` keyword.
+- Interception works even with `final` classes and methods.
+
+To use these features, simply install the PECL extension and Ray.Aop will automatically utilize it when available. PHP 8.1+ is required for the PECL extension.
+
+### Installing the PECL extension
+
+PHP 8.1 or higher is required to use the PECL extension. For more information, see [ext-rayaop](https://github.com/ray-di/ext-rayaop?tab=readme-ov-file#installation).
+
+## Configuration Options
+
+When creating an `Aspect` instance, you can optionally specify a temporary directory:
+
+```php
+$aspect = new Aspect('/path/to/tmp/dir');
+```
+
+If not specified, the system's default temporary directory will be used.
+
+This concludes the basic usage of Ray.Aop. For more detailed information and advanced usage, please refer to the full documentation.
+```
 Own matcher
 -----------
 
@@ -140,69 +166,9 @@ class IsContainsMatcher extends AbstractMatcher
 }
 ```
 
-```php
-$pointcut = new Pointcut(
-    (new Matcher())->any(),
-    new IsContainsMatcher('charge'),
-    [new WeekendBlocker()]
-);
-$bind = (new Bind())->bind(RealBillingService::class, [$pointcut]);
-$billing = (new Weaver($bind, $tmpDir))->newInstance(RealBillingService::class, [$arg1, $arg2]);
-```
+## Interceptor Details
 
-The matcher supports reading doctrine annotations or PHP8 attributes.
-
-```php
-    public function matchesClass(\ReflectionClass $class, array $arguments) : bool
-    {
-        assert($class instanceof \Ray\Aop\ReflectionClass);
-        $classAnnotation = $class->getAnnotation(Foo::class); // @Foo or #[Foo]
-        // ...
-    }
-
-    public function matchesMethod(\ReflectionMethod $method, array $arguments) : bool
-    {
-         assert($method instanceof \Ray\Aop\ReflectionMethod);
-         $methodAnnotation = $method->getAnnotation(Bar::class);
-    }
-```
-
-## Performance boost
-
-Cached `Weaver` object can save the compiling, binding, annotation reading costs.
-
-```php
-$weaver = unserialize(file_get_contentes('./serializedWeaver'));
-$billing = (new Weaver($bind, $tmpDir))->newInstance(RealBillingService::class, [$arg1, $arg2]);
-```
-
-## Priority
-
-The order of interceptor invocation are determined by following rules.
-
-* Basically, it will be invoked in bind order.
-* `PriorityPointcut` has most priority.
-* Annotation method match is followed by `PriorityPointcut`. Invoked in annotation order as follows.
-
-
-```php
-#[Auth]   // 1st
-#[Cache]  // 2nd
-#[Log]    // 3rd
-```
-
-## Limitations
-
-Behind the scenes, method interception is implemented by generating code at runtime. Ray.Aop dynamically creates a subclass that applies interceptors by overriding methods.
-
-This approach imposes limits on what classes and methods can be intercepted:
-
-* Classes must be *non-final*
-* Methods must be *public*
-
-# Interceptor
-
-In an interceptor a `MethodInvocation` object gets passed to the `invoke` method. We can the decorate the targetted instances so that you run computations before or after any methods on the target are invoked.
+In an interceptor, a `MethodInvocation` object is passed to the `invoke` method:
 
 ```php
 class MyInterceptor implements MethodInterceptor
@@ -210,27 +176,56 @@ class MyInterceptor implements MethodInterceptor
     public function invoke(MethodInvocation $invocation)
     {
         // Before method invocation
-        // ...
-        
-        // Method invocation
-        $result = invocation->proceed();
-        
+        $result = $invocation->proceed();
         // After method invocation
-        // ...
-                
+        return $result;
+    }
+}
+
+In an interceptor a `MethodInvocation` object gets passed to the `invoke` method. We can the decorate the targetted instances so that you run computations before or after any methods on the target are invoked.
+
+```markdown
+[The first half remains unchanged, updating the Interceptor Details section]
+
+## Interceptor Details
+
+In an interceptor, a `MethodInvocation` object is passed to the `invoke` method:
+
+```php
+class MyInterceptor implements MethodInterceptor
+{
+    public function invoke(MethodInvocation $invocation)
+    {
+        // Before method invocation
+        $result = $invocation->proceed();
+        // After method invocation
         return $result;
     }
 }
 ```
 
-With the `MethodInvocation` object, you can access the target method's invocation object, method's and parameters.
+$invocation->proceed() invokes the next interceptor in the chain. If no more interceptors are present, it calls the target method. This chaining allows multiple interceptors for a single method, executing in the order bound.
+
+Example execution flow for interceptors A, B, and C:
+
+1. Interceptor A (before)
+2. Interceptor B (before)
+3. Interceptor C (before)
+4. Target method
+5. Interceptor C (after)
+6. Interceptor B (after)
+7. Interceptor A (after)
+
+This chaining mechanism allows you to combine multiple cross-cutting concerns (like logging, security, and performance monitoring) for a single method.
+
+With the `MethodInvocation` object, you can:
 
 * [`$invocation->proceed()`](https://github.com/ray-di/Ray.Aop/blob/2.x/src/Joinpoint.php#L41) - Invoke method
 * [`$invocation->getMethod()`](https://github.com/ray-di/Ray.Aop/blob/2.x/src/MethodInvocation.php#L30) -  Get method reflection
 * [`$invocation->getThis()`](https://github.com/ray-di/Ray.Aop/blob/2.x/src/Joinpoint.php#L50) - Get object
 * [`$invocation->getArguments()`](https://github.com/ray-di/Ray.Aop/blob/2.x/src/Invocation.php#L25) - Get parameters
 * [`$invocation->getNamedArguments()`](https://github.com/ray-di/Ray.Aop/blob/2.x/src/Invocation.php#L32) - Get named parameters
-  An extended `ClassRefletion` and `MethodReflection` holds methos to get annotation(s).
+  An extended `ClassRefletion` and `MethodReflection` holds methos to get PHP 8 attribute and doctrine annotation(s) .
 
 ```php
 /** @var $method \Ray\Aop\ReflectionMethod */
@@ -239,15 +234,14 @@ $method = $invocation->getMethod();
 $class = $invocation->getMethod()->getDeclaringClass();
 ```
 
-* `$method->getAnnotations()`     - Get method annotations
-* `$method->getAnnotation($name)` - Get method annotation
-* `$class->->getAnnotations()`    - Get class annotations
-* `$class->->getAnnotation($name)`     - Get class annotation
+* `$method->getAnnotations()`     - Get method attributes/annotations
+* `$method->getAnnotation($name)` - Get method attribute/annotation
+* `$class->->getAnnotations()`    - Get class attributes/annotations
+* `$class->->getAnnotation($name)`     - Get class attributes/annotation
 
 ## Annotation/Attribute
 
 Ray.Aop can be used either with [doctrine/annotation](https://github.com/doctrine/annotations) in PHP 7/8 or with an [Attributes](https://www.php.net/manual/en/language.attributes.overview.php) in PHP8.
-See the annotation code examples in the older [README(v2.9)](https://github.com/ray-di/Ray.Aop/blob/2.9.9/README.md).
 
 ## AOP Alliance
 
@@ -262,16 +256,6 @@ The recommended way to install Ray.Aop is through [Composer](https://github.com/
 $ composer require ray/aop ^2.0
 ```
 
-## Performance
-
-Compilation of the AOP class allows Ray.Aop to run faster. Annotations are only loaded at first compile time, so they do not affect runtime performance. During the development phase and even at first runtime, PHP files are cached using the file timestamps, so normally you do not need to worry about the cost of annotation generation, but by setting up an annotation reader in the application bootstrap, first-time compile time performance. This setting is especially useful for large applications.
-
-### APCu
-
-```php
-SevericeLocator::setReader(new PsrCachedReader(new Reader(), $apcuCache));
-```
-
 ### PHP8 attributes only (recommended)
 
 ```php
@@ -282,7 +266,7 @@ SevericeLocator::setReader(new AttributeReader);`
 
 * See also the DI framework [Ray.Di](https://github.com/ray-di/Ray.Di) which integrates DI and AOP.
 
-
 ---
 
-* Note: This documentation of the most part is taken from [Guice/AOP](https://github.com/google/guice/wiki/AOP).
+* Note: This documentation of the part is taken from [Guice/AOP](https://github.com/google/guice/wiki/AOP).
+z1

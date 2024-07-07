@@ -44,7 +44,11 @@ final class Weaver
     {
         $aopClass = $this->weave($class);
         $instance = (new ReflectionClass($aopClass))->newInstanceArgs($args);
-        assert(isset($instance->bindings));
+        if (! isset($instance->bindings)) {
+            /** @var T $instance  */
+            return $instance;
+        }
+
         $instance->bindings = $this->bind->getBindings();
         assert($instance instanceof $class);
 
@@ -69,10 +73,10 @@ final class Weaver
             return $aopClass->fqn;
         }
 
-        $this->compiler->compile($class, $this->bind);
-        assert(class_exists($aopClass->fqn));
+        $newClass = $this->compiler->compile($class, $this->bind);
+        assert(class_exists($newClass));
 
-        return $aopClass->fqn;
+        return $newClass;
     }
 
     private function loadClass(string $class): bool

@@ -75,19 +75,18 @@ class WeekendBlocker implements MethodInterceptor
 use Ray\Aop\Sample\Annotation\NotOnWeekends;
 use Ray\Aop\Sample\Annotation\RealBillingService;
 
-$pointcut = new Pointcut(
+$aspect = new Aspect();
+$aspect->bind(
     (new Matcher())->any(),
     (new Matcher())->annotatedWith(NotOnWeekends::class),
     [new WeekendBlocker()]
 );
-$bind = (new Bind())->bind(RealBillingService::class, [$pointcut]);
-$billing = (new Weaver($bind, $tmpDir))->newInstance(RealBillingService::class, [], $bind);
 
+$billing = $aspect->newInstance(RealBillingService::class);
 try {
     echo $billing->chargeOrder();
 } catch (\RuntimeException $e) {
     echo $e->getMessage() . "\n";
-    exit(1);
 }
 ```
 
@@ -97,117 +96,41 @@ try {
 chargeOrder not allowed on weekends!
 ```
 
-## メソッド名を指定したマッチ
+## PECL拡張
+
+Ray.Aopは[PECL拡張](https://github.com/ray-di/ext-rayaop)もサポートしています。拡張機能がインストールされている場合、weaveメソッドを使用してディレクトリ内のすべてのクラスにアスペクトを適用できます。
 
 ```php
-<?php
-    $bind = (new Bind())->bindInterceptors('chargeOrder', [new WeekendBlocker()]);
-    $compiler = new Weaver($bind, $tmpDir);
-    $billing = $compiler->newInstance('RealBillingService', [], $bind);
-    try {
-        echo $billing->chargeOrder();
-    } catch (\RuntimeException $e) {
-        echo $e->getMessage() . "\n";
-        exit(1);
-    }
-```
-
-## 独自のマッチャー
-
-独自のマッチャーを作成することもでます。
-`contains` マッチャーを作成するためには、２つのメソッドを持つクラスを提供する必要があります。
-１つはクラスのマッチを行う`matchesClass`メソッド、もう１つはメソッドのマッチを行う`matchesMethod`です。いずれもマッチしたかどうかをブールで返します。
-
-```php
-use Ray\Aop\AbstractMatcher;
-
-class IsContainsMatcher extends AbstractMatcher
-{
-    /**
-     * {@inheritdoc}
-     */
-    public function matchesClass(\ReflectionClass $class, array $arguments) : bool
-    {
-        [$contains] = $arguments;
-
-        return (strpos($class->name, $contains) !== false);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function matchesMethod(\ReflectionMethod $method, array $arguments) : bool
-    {
-        [$contains] = $arguments;
-
-        return (strpos($method->name, $contains) !== false);
-    }
-}
-```
-
-```php
-$pointcut = new Pointcut(
+$aspect = new Aspect();
+$aspect->bind(
     (new Matcher())->any(),
-    new IsContainsMatcher('charge'),
+    (new Matcher())->annotatedWith(NotOnWeekends::class),
     [new WeekendBlocker()]
 );
-$bind = (new Bind)->bind(RealBillingService::class, [$pointcut]);
-$billing = (new Weaver($bind, $tmpDir))->newInstance(RealBillingService::class, [$arg1, $arg2]);
+$aspect->weave(__DIR__ . '/src'); // ディレクトリ内でマッチャーに一致するすべてのクラスにアスペクトを織り込みます。
+$billing = new RealBillingService();
+echo $billing->chargeOrder(); // インターセプターが適用されます。
 ```
 
-マッチャーはdoctrineアノテーション、またはPHP8アトリビュートの読み込みをサポートします。
+PECL拡張機能を使用すると：
+
+通常のnewキーワードを使用してコードのどこでも新しいインスタンスを作成できます。
+インターセプションはfinalクラスやメソッドでも動作します。
+これらの機能を使用するには、PECL拡張機能をインストールするだけで、Ray.Aopが自動的に利用します。 
+
+### PECL拡張のインストール
+
+PECL拡張機能の利用にはPHP 8.1以上が必要です。詳細は[ext-rayaop](https://github.com/ray-di/ext-rayaop?tab=readme-ov-file#installation)を参照してください。
+
+## 設定オプション
+Aspectインスタンスを作成する際に、オプションで一時ディレクトリを指定できます。
 
 ```php
-    public function matchesClass(\ReflectionClass $class, array $arguments) : bool
-    {
-        assert($class instanceof \Ray\Aop\ReflectionClass);
-        $classAnnotation = $class->getAnnotation(Foo::class); // @Foo or #[Foo]
-        // ...
-    }
-
-    public function matchesMethod(\ReflectionMethod $method, array $arguments) : bool
-    {
-         assert($method instanceof \Ray\Aop\ReflectionMethod);
-         $methodAnnotation = $method->getAnnotation(Bar::class);
-    }
+$aspect = new Aspect('/path/to/tmp/dir');
 ```
+指定しない場合、システムのデフォルトの一時ディレクトリが使用されます。
 
-## パフォーマンス
-
-`Weaver`オブジェクトはキャッシュ可能です。コンパイル、束縛、アノテーション読み込みコストを削減します。
-
-```php
-$weaver = unserialize(file_get_contentes('./serializedWeaver'));
-$billing = (new Weaver($bind, $tmpDir))->newInstance(RealBillingService::class, [$arg1, $arg2]);
-```
-
-## 優先順位
-
-インターセプターの実行順は以下のルールで決定されます。
-
- * 基本的にはバインドした順に実行されます。
- * `PriorityPointcut`で定義したものが最も優先されます。
- * アノテーションでメソッドマッチするものは`PriorityPointcut`の次に優先されます。その時アノテートされた順で優先されます。
-
-```php
-/**
- * @Auth    // 1st
- * @Cache   // 2nd
- * @Log     // 3rd
- */
-```
-
-## 制限
-
-この機能の背後ではメソッドのインターセプションを事前にコードを生成する事で可能にしています。Ray.Aopはダイナミックにサブクラスを生成してメソッドをオーバーライドするインターセプターを適用します。
-
-クラスとメソッドは以下のものである必要があります。
-
- * クラスは *final* ではない
- * メソッドは *public*
-
-
-## インターセプター
+## インターセプターの詳細
 
 呼び出されたメソッドをそのまま実行するだけのインターセプターは以下のようになります。
 
@@ -216,21 +139,25 @@ class MyInterceptor implements MethodInterceptor
 {
     public function invoke(MethodInvocation $invocation)
     {
-        // メソッド実行前
-        //
-        
-        // メソッド実行
-        $result = invocation->proceed();
-        
-        // メソッド実行後
-        //
-                
+        // メソッド呼び出し前
+        $result = $invocation->proceed();
+        // メソッド呼び出し後
         return $result;
     }
 }
 ```
 
-インターセプターに渡されるメソッド実行(`MethodInvocation`)オブジェクトは以下のメソッドを持ちます。
+`$invocation->proceed()`はチェーン内の次のインターセプターを呼び出します。インターセプターが存在しない場合、ターゲットメソッドを呼び出します。このチェーンにより、単一のメソッドに対して複数のインターセプターを適用し、バインドされた順序で実行することができます。
+
+インターセプターA、B、Cがメソッドにバインドされている場合の実行フローの例：
+
+1. インターセプターA（前）
+1. インターセプターB（前）
+1. インターセプターC（前）
+1. ターゲットメソッド
+1. インターセプターC（後）
+1. インターセプターB（後）
+1. インターセプターA（後）
 
 
  * [`$invocation->proceed()`](https://github.com/ray-di/Ray.Aop/blob/2.x/src/Joinpoint.php#L41) - メソッド実行
@@ -240,7 +167,7 @@ class MyInterceptor implements MethodInterceptor
  * [`$invocation->getNamedArguments()`](https://github.com/ray-di/Ray.Aop/blob/2.x/src/Invocation.php#L32) - 名前付き引数の取得
 
 
-拡張されたリフレクションはアノテーション取得のメソッドを持ちます。
+拡張されたClassReflectionとMethodReflectionはPHP 8の属性とドクトリンアノテーションを取得するメソッドを提供します。
  
 ```php
 /** @var $method \Ray\Aop\ReflectionMethod */
@@ -250,10 +177,36 @@ $class = $invocation->getMethod()->getDeclaringClass();
 ```
 
  
- * [`$method->getAnnotations()`]() - メソッドアノテーションの取得
+ * [`$method->getAnnotations()`]() - メソッドアトリビュート/アノテーションの取得
  * [`$method->getAnnotation($name)`]() 
- * [`$class->->getAnnotations()`]() - クラスアノテーションの取得
+ * [`$class->->getAnnotations()`]() - クラスアトリビュート/アノテーションの取得
  * [`$class->->getAnnotation($name)`]()
+
+## 独自のマッチャー
+
+独自のマッチャーを作成できます。例えば、`ContainsMatcher`を作成するには：
+
+```php
+use Ray\Aop\AbstractMatcher;
+
+class ContainsMatcher extends AbstractMatcher
+{
+    public function matchesClass(\ReflectionClass $class, array $arguments) : bool
+    {
+        [$contains] = $arguments;
+        return (strpos($class->name, $contains) !== false);
+    }
+
+    public function matchesMethod(\ReflectionMethod $method, array $arguments) : bool
+    {
+        [$contains] = $arguments;
+        return (strpos($method->name, $contains) !== false);
+    }
+}
+```
+
+アノテーション/属性
+Ray.Aopは[doctrine/annotation](https://github.com/doctrine/annotations)またはPHP 8の[Attributes](https://www.php.net/manual/en/language.attributes.overview.php)のどちらかも使用できます。
 
 ## AOPアライアンス
 
@@ -266,16 +219,6 @@ Ray.Aopの推奨インストール方法は、[Composer](https://github.com/comp
 ```bash
 # Ray.Aop を依存パッケージとして追加する
 $ composer require ray/aop ~2.0
-```
-
-## パフォーマンス
-
-AOPクラスのコンパイルにより、Ray.Aopは高速に動作します。アノテーションの読み込みは初回コンパイル時のみなので、ランタイムのパフォーマンスに影響を与えません。開発段階や最初の実行時にも、ファイルのタイムスタンプを利用してPHPファイルがキャッシュされ、通常はアノテーション生成のコストを気にする必要はありませんが、アプリケーションのブートストラップでアノテーションリーダーの設定を行うことで、初回コンパイル時のパフォーマンスが向上します。特に大規模なアプリケーションでこの設定は役立ちます。
-
-### APCu
-
-```php
-SevericeLocator::setReader(new PsrCachedReader(new Reader(), $apcuCache));
 ```
 
 ### アトリビュートのみ使用（推奨）

@@ -29,16 +29,21 @@
     },
     "autoload": {
         "psr-4": {
-            "Ray\\Aop\\": ["src/"],
+            "Ray\\Aop\\": ["src/", "src-php8"],
             "Ray\\ServiceLocator\\": ["sl-src/"]
         },
         "files": ["annotation_loader.php"]
     },
     "autoload-dev": {
         "psr-4": {
-            "Ray\\Aop\\": ["tests/", "tests/Fake/"]
+            "Ray\\Aop\\": ["tests/", "tests/Fake/", "tests/Aspect", "tests/Aspect/Fake", "tests/Aspect/Fake/src"]
         },
-        "files": ["tests/Fake/FakeGlobalNamespaced.php", "tests/Fake/FakeGlobalEmptyNamespaced.php"]
+        "files": [
+            "src-mock/method_intercept.php",
+            "src-mock/MethodInterceptorInterface.php",
+            "tests/Fake/FakeGlobalNamespaced.php",
+            "tests/Fake/FakeGlobalEmptyNamespaced.php"
+        ]
     },
     "suggest": {
         "ray/di": "A dependency injection framework"
