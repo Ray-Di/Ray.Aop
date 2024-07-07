@@ -97,18 +97,30 @@ chargeOrder not allowed on weekends!
 ```
 
 ## PECL拡張
+
 Ray.Aopは[PECL拡張](https://github.com/ray-di/ext-rayaop)もサポートしています。拡張機能がインストールされている場合、weaveメソッドを使用してディレクトリ内のすべてのクラスにアスペクトを適用できます。
 
 ```php
-$aspect->weave(__DIR__ . '/src');
-
-$billing = new RealBillingService; // インターセプターが適用されます
+$aspect = new Aspect();
+$aspect->bind(
+    (new Matcher())->any(),
+    (new Matcher())->annotatedWith(NotOnWeekends::class),
+    [new WeekendBlocker()]
+);
+$aspect->weave(__DIR__ . '/src'); // ディレクトリ内でマッチャーに一致するすべてのクラスにアスペクトを織り込みます。
+$billing = new RealBillingService();
+echo $billing->chargeOrder(); // インターセプターが適用されます。
 ```
+
 PECL拡張機能を使用すると：
 
 通常のnewキーワードを使用してコードのどこでも新しいインスタンスを作成できます。
 インターセプションはfinalクラスやメソッドでも動作します。
-これらの機能を使用するには、PECL拡張機能をインストールするだけで、Ray.Aopが自動的に利用します。
+これらの機能を使用するには、PECL拡張機能をインストールするだけで、Ray.Aopが自動的に利用します。 
+
+### PECL拡張のインストール
+
+PECL拡張機能の利用にはPHP 8.1以上が必要です。詳細は[ext-rayaop](https://github.com/ray-di/ext-rayaop?tab=readme-ov-file#installation)を参照してください。
 
 ## 設定オプション
 Aspectインスタンスを作成する際に、オプションで一時ディレクトリを指定できます。

@@ -98,16 +98,26 @@ chargeOrder not allowed on weekends!
 Ray.Aop also supports a [PECL extension](https://github.com/ray-di/ext-rayaop). When the extension is installed, you can use the `weave` method to apply aspects to all classes in a directory:
 
 ```php
-$aspect->weave(__DIR__ . '/src');
-
-$billing = new RealBillingService; // Interceptors applied
+$aspect = new Aspect();
+$aspect->bind(
+    (new Matcher())->any(),
+    (new Matcher())->annotatedWith(NotOnWeekends::class),
+    [new WeekendBlocker()]
+);
+$aspect->weave(__DIR__ . '/src'); // Weave the aspects to all classes in the directory that match the matcher.
+$billing = new RealBillingService();
+echo $billing->chargeOrder(); // Interceptors applied
 ```
 
 With the PECL extension:
 - You can create new instances anywhere in your code using the normal `new` keyword.
 - Interception works even with `final` classes and methods.
 
-To use these features, simply install the PECL extension and Ray.Aop will automatically utilize it when available.
+To use these features, simply install the PECL extension and Ray.Aop will automatically utilize it when available. PHP 8.1+ is required for the PECL extension.
+
+### Installing the PECL extension
+
+PHP 8.1 or higher is required to use the PECL extension. For more information, see [ext-rayaop](https://github.com/ray-di/ext-rayaop?tab=readme-ov-file#installation).
 
 ## Configuration Options
 
