@@ -20,7 +20,7 @@ use function count;
 use function end;
 use function extension_loaded;
 use function get_declared_classes;
-use function method_intercept;
+use function method_intercept; // @phpstan-ignore-line
 use function strcasecmp;
 use function sys_get_temp_dir;
 
@@ -131,7 +131,8 @@ final class Aspect
             $methodNames = array_keys($methods);
             foreach ($methodNames as $methodName) {
                 assert($dispatcher instanceof MethodInterceptorInterface);
-                method_intercept($className, $methodName, $dispatcher);
+                /** @psalm-suppress UndefinedFunction PECL-created function */
+                method_intercept($className, $methodName, $dispatcher); // @phpstan-ignore-line
             }
         }
     }
