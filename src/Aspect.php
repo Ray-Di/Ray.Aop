@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ray\Aop;
 
+use MethodInterceptorInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
@@ -11,6 +12,7 @@ use ReflectionMethod;
 use RuntimeException;
 use SplFileInfo;
 
+use function array_keys;
 use function array_slice;
 use function assert;
 use function basename;
@@ -127,7 +129,9 @@ final class Aspect
 
         $dispatcher = new PeclDispatcher($this->bound);
         foreach ($this->bound as $className => $methods) {
-            foreach ($methods as $methodName => $interceptors) {
+            $methodNames = array_keys($methods);
+            foreach ($methodNames as $methodName) {
+                assert($dispatcher instanceof MethodInterceptorInterface);
                 method_intercept($className, $methodName, $dispatcher);
             }
         }
