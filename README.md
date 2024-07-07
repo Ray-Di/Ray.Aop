@@ -64,7 +64,6 @@ class WeekendBlocker implements MethodInterceptor
 }
 ```
 
-```markdown
 Finally, we configure everything using the `Aspect` class:
 
 ```php
@@ -130,9 +129,8 @@ $aspect = new Aspect('/path/to/tmp/dir');
 If not specified, the system's default temporary directory will be used.
 
 This concludes the basic usage of Ray.Aop. For more detailed information and advanced usage, please refer to the full documentation.
-```
-Own matcher
------------
+
+## Own matcher
 
 You can have your own matcher.
 To create `contains` matcher, You need to provide a class which have two method. One is `matchesClass` for class match.
@@ -165,27 +163,6 @@ class IsContainsMatcher extends AbstractMatcher
     }
 }
 ```
-
-## Interceptor Details
-
-In an interceptor, a `MethodInvocation` object is passed to the `invoke` method:
-
-```php
-class MyInterceptor implements MethodInterceptor
-{
-    public function invoke(MethodInvocation $invocation)
-    {
-        // Before method invocation
-        $result = $invocation->proceed();
-        // After method invocation
-        return $result;
-    }
-}
-
-In an interceptor a `MethodInvocation` object gets passed to the `invoke` method. We can the decorate the targetted instances so that you run computations before or after any methods on the target are invoked.
-
-```markdown
-[The first half remains unchanged, updating the Interceptor Details section]
 
 ## Interceptor Details
 
@@ -269,4 +246,4 @@ SevericeLocator::setReader(new AttributeReader);`
 ---
 
 * Note: This documentation of the part is taken from [Guice/AOP](https://github.com/google/guice/wiki/AOP).
-z1
+  z1
