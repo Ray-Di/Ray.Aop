@@ -29,7 +29,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Ray\\Aop\\": ["src/"],
+            "Ray\\Aop\\": ["src/", "src-php8"],
             "Ray\\ServiceLocator\\": ["sl-src/"]
         },
         "files": ["annotation_loader.php"]

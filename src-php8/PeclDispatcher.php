@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Ray\Aop;
 
-use LogicException;
-use MethodInterceptorInterface;
-use function get_class;
+use Ray\Aop\Exception\LogicException;
 
 class PeclDispatcher implements MethodInterceptorInterface
 {
