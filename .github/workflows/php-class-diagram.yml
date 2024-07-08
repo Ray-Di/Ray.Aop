@@ -24,6 +24,7 @@ jobs:
             output-path: ./images/php-class-diagram.svg
             target-repo: ${{ github.repository }}
             target-branch: ${{ github.ref_name }}
+            options: --hide-private-methods
 
         - name: Upload Artifact
           uses: actions/upload-artifact@v4
