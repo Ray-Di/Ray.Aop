@@ -244,6 +244,10 @@ SevericeLocator::setReader(new AttributeReader);`
 
 * See also the DI framework [Ray.Di](https://github.com/ray-di/Ray.Di) which integrates DI and AOP.
 
+## Technical Information
+
+* [Class Diagram](https://ray-di.github.io/Ray.Aop/images/php-class-diagram.svg) - Class interrelationship diagram created by　[php-class-diagram](https://github.com/smeghead/php-class-diagram).
+
 ---
 
 * Note: This documentation of the part is taken from [Guice/AOP](https://github.com/google/guice/wiki/AOP).
