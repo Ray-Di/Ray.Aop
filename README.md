@@ -248,7 +248,7 @@ SevericeLocator::setReader(new AttributeReader);`
 
 For more detailed technical information, please refer to the following resources:
 
-- [Class Diagram](https://ray-di.github.io/Ray.Aop/images/php-class-diagram.html)
+- [Class Diagram](https://ray-di.github.io/Ray.Aop/php-class-diagram.html)
 
 ---
 
