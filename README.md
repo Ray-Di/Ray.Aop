@@ -246,7 +246,9 @@ SevericeLocator::setReader(new AttributeReader);`
 
 ## Technical Information
 
-* [Class Diagram](https://ray-di.github.io/Ray.Aop/images/php-class-diagram.svg) - Class interrelationship diagram created by　[php-class-diagram](https://github.com/smeghead/php-class-diagram).
+For more detailed technical information, please refer to the following resources:
+
+- [Class Diagram](https://ray-di.github.io/Ray.Aop/images/php-class-diagram.html)
 
 ---
 
