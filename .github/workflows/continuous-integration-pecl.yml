@@ -32,6 +32,9 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-dev --prefer-dist --no-progress
 
+      - name: Install PHPUnit
+        run: composer require phpunit/phpunit --dev --prefer-dist --no-progress
+
       - name: Build extension
         id: build_extension
         run: |
