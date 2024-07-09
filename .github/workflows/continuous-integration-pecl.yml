@@ -30,7 +30,7 @@ jobs:
           sudo apt-get install -y autoconf automake libtool bison re2c valgrind
 
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress
+        run: composer install --no-dev --prefer-dist --no-progress
 
       - name: Build extension
         id: build_extension
