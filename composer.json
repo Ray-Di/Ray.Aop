@@ -14,7 +14,8 @@
         "ext-hash": "*",
         "ext-tokenizer": "*",
         "doctrine/annotations": "^1.12 || ^2.0",
-        "koriym/attributes": "^1.0.3"
+        "koriym/attributes": "^1.0.3",
+        "wyrihaximus/list-classes-in-directory": "^1.6"
     },
     "require-dev": {
         "bamarni/composer-bin-plugin": "^1.4.1",

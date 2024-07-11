@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Ray\Aop;
 
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
+use Ray\Aop\ReflectionMethod as RayAopReflectionMethod;
 use ReflectionClass;
 use ReflectionMethod;
 use RuntimeException;
@@ -20,9 +19,11 @@ use function count;
 use function end;
 use function extension_loaded;
 use function get_declared_classes;
+use function ksort;
 use function method_intercept; // @phpstan-ignore-line
 use function strcasecmp;
 use function sys_get_temp_dir;
+use function WyriHaximus\listClassesInDirectories;
 
 final class Aspect
 {
@@ -50,7 +51,7 @@ final class Aspect
         ];
     }
 
-    public function weave(string $classDir): void
+    public function weave(string $classDir, ?callable $dispatcherFactory = null): void
     {
         if (! extension_loaded('rayaop')) {
             throw new RuntimeException('Ray.Aop extension is not loaded. Cannot use weave() method.');
@@ -62,18 +63,9 @@ final class Aspect
 
     private function scanAndCompile(string $classDir): void
     {
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($classDir)
-        );
-
-        /** @var SplFileInfo[] $files */
-        foreach ($files as $file) {
-            if ($file->isDir() || $file->getExtension() !== 'php') {
-                continue;
-            }
-
-            $className = $this->getClassNameFromFile($file->getPathname());
-            if ($className === null) {
+        $classList = listClassesInDirectories($classDir);
+        foreach ($classList as $className) {
+            if (! class_exists($className)) {
                 continue;
             }
 
@@ -81,28 +73,9 @@ final class Aspect
         }
     }
 
-    private function getClassNameFromFile(string $file): ?string
-    {
-        $declaredClasses = get_declared_classes();
-        $previousCount = count($declaredClasses);
-
-        /** @psalm-suppress UnresolvableInclude */
-        require_once $file;
-
-        $newClasses = array_slice(get_declared_classes(), $previousCount);
-
-        foreach ($newClasses as $class) {
-            if (strcasecmp(basename($file, '.php'), $class) === 0) {
-                return $class;
-            }
-        }
-
-        return $newClasses ? end($newClasses) : null;
-    }
-
     private function processClass(string $className): void
     {
-        assert(class_exists($className));
+        assert(class_exists($className), 'Class does not exist:' . $className);
         $reflection = new ReflectionClass($className);
 
         foreach ($this->matchers as $matcher) {
@@ -111,7 +84,8 @@ final class Aspect
             }
 
             foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-                if (! $matcher['methodMatcher']->matchesMethod($method, $matcher['methodMatcher']->getArguments())) {
+                $aopMethod = new RayAopReflectionMethod($className, $method->getName());
+                if (! $matcher['methodMatcher']->matchesMethod($aopMethod, $matcher['methodMatcher']->getArguments())) {
                     continue;
                 }
 
@@ -127,6 +101,7 @@ final class Aspect
         }
 
         $dispatcher = new PeclDispatcher($this->bound);
+        ksort($this->bound);
         foreach ($this->bound as $className => $methods) {
             $methodNames = array_keys($methods);
             foreach ($methodNames as $methodName) {
