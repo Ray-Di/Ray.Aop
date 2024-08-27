@@ -62,7 +62,7 @@ final class Weaver
      */
     public function weave(string $class): string
     {
-        $aopClass = new AopPostfixClassName($class, $this->bindName);
+        $aopClass = new AopPostfixClassName($class, $this->bindName, $this->classDir);
         if (class_exists($aopClass->fqn, false)) {
             return $aopClass->fqn;
         }

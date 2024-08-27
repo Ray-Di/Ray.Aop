@@ -18,10 +18,10 @@ final class AopPostfixClassName
     public $postFix;
 
     /** @param class-string $class */
-    public function __construct(string $class, string $bindings)
+    public function __construct(string $class, string $bindings, string $classDir)
     {
         $fileTime = (string) filemtime((string) (new ReflectionClass($class))->getFileName());
-        $this->postFix = '_' . crc32($fileTime . $bindings);
+        $this->postFix = '_' . crc32($fileTime . $bindings . $classDir);
         $this->fqn = $class . $this->postFix;
     }
 }

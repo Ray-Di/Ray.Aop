@@ -65,7 +65,7 @@ final class Compiler implements CompilerInterface
             return $class;
         }
 
-        $className = new AopPostfixClassName($class, (string) $bind);
+        $className = new AopPostfixClassName($class, (string) $bind, $this->classDir);
         if (class_exists($className->fqn, false)) {
             return $className->fqn;
         }
