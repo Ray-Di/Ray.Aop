@@ -198,7 +198,7 @@ final class Aspect
     private function createBind(string $className): Bind
     {
         $bind = new Bind();
-        $reflection = new ReflectionClass($className);
+        $reflection = new \Ray\Aop\ReflectionClass($className);
 
         foreach ($this->matchers as $matcher) {
             if (! $matcher['classMatcher']->matchesClass($reflection, $matcher['classMatcher']->getArguments())) {
