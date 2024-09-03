@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ray\Aop;
 
 use PHPUnit\Framework\TestCase;
+use Ray\Aop\Annotation\FakeClassMarker;
 use Ray\Aop\Aspect\Fake\src\FakeMyClass;
 use Ray\Aop\Matcher\AnyMatcher;
 use Ray\Aop\Matcher\StartsWithMatcher;
@@ -62,5 +63,18 @@ class AspectTest extends TestCase
         $this->assertSame(get_class($myClass), FakeMyClass::class);
         // the original method is intercepted
         $this->assertEquals('intercepted original', $result);
+    }
+
+    public function testAnnotateMatcher(): void
+    {
+        $aspect = new Aspect();
+        $aspect->bind(
+            (new Matcher())->annotatedWith(FakeClassMarker::class),
+            (new Matcher())->any(),
+            [new FakeMyInterceptor()]
+        );
+
+        $billing = $aspect->newInstance(FakeMyClass::class);
+        $this->assertInstanceOf(FakeMyClass::class, $billing);
     }
 }
