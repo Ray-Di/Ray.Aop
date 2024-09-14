@@ -43,7 +43,7 @@ class AspectTest extends TestCase
     }
 
     /**
-     * @requires extension rauoop
+     * @requires extension rayaop
      * @requires PHP 8.1
      * @depends testNewInstance
      *
