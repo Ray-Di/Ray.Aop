@@ -13,7 +13,7 @@ use function serialize;
  *
  * @psalm-import-type MethodInterceptors from Aspect
  * @psalm-import-type MethodBindings from Aspect
- * @psalm-type PointcutList = array<Pointcut>
+ * @psalm-type Pointcuts = array<Pointcut>
  */
 final class Bind implements BindInterface
 {
@@ -42,7 +42,7 @@ final class Bind implements BindInterface
      * Bind pointcuts to methods
      *
      * @param class-string $class     Target class
-     * @param PointcutList $pointcuts List of pointcuts
+     * @param Pointcuts    $pointcuts List of pointcuts
      */
     public function bind(string $class, array $pointcuts): BindInterface
     {
@@ -101,7 +101,7 @@ final class Bind implements BindInterface
     /**
      * @param Pointcut[] $pointcuts
      *
-     * @return PointcutList
+     * @return Pointcuts
      */
     private function getAnnotationPointcuts(array $pointcuts): array
     {
