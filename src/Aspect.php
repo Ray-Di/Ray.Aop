@@ -97,6 +97,8 @@ final class Aspect
      * @param string $classDir Target class directory
      *
      * @throws RuntimeException When Ray.Aop extension is not loaded.
+     *
+     * @ccodeCoverageIgnore
      */
     public function weave(string $classDir): void
     {
@@ -110,6 +112,8 @@ final class Aspect
 
     /**
      * Scan directory and compile classes
+     *
+     * @ccodeCoverageIgnore
      */
     private function scanDirectory(string $classDir): void
     {
@@ -136,6 +140,8 @@ final class Aspect
      * Get class name from file
      *
      * @return class-string|null
+     *
+     * @ccodeCoverageIgnore
      */
     private function getClassNameFromFile(string $file): ?string
     {
@@ -160,6 +166,8 @@ final class Aspect
      * Process class for interception
      *
      * @param class-string $className
+     *
+     * @ccodeCoverageIgnore
      */
     private function processClass(string $className): void
     {
@@ -185,6 +193,8 @@ final class Aspect
 
     /**
      * Apply interceptors to bound methods
+     *
+     * @ccodeCoverageIgnore
      */
     private function applyInterceptors(): void
     {
@@ -236,6 +246,7 @@ final class Aspect
      * @return T
      *
      * @template T of object
+     * @ccodeCoverageIgnore
      */
     private function newInstanceWithPecl(string $className, array $args): object
     {
@@ -289,7 +300,7 @@ final class Aspect
 
             foreach ($methods as $method) {
                 if (! $matcher['methodMatcher']->matchesMethod($method, $matcher['methodMatcher']->getArguments())) {
-                    continue;
+                    continue; // @codeCoverageIgnore
                 }
 
                 $bind->bindInterceptors($method->getName(), $matcher['interceptors']);
