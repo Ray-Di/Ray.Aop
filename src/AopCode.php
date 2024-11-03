@@ -23,6 +23,12 @@ use const T_CLASS;
 use const T_EXTENDS;
 use const T_STRING;
 
+/**
+ * Aop Code
+ *
+ * AopCode is responsible for generating code for Aspect-Oriented Programming (AOP)
+ * by adding interceptors and modifying class definitions.
+ */
 final class AopCode
 {
     public const INTERCEPT_STATEMENT = '\$this->_intercept(__FUNCTION__, func_get_args());';
@@ -41,7 +47,11 @@ final class AopCode
         $this->methodSignature = $methodSignature;
     }
 
-    /** @param ReflectionClass<object> $sourceClass */
+    /**
+     * @param ReflectionClass<object> $sourceClass
+     *
+     * @psalm-external-mutation-free
+     */
     public function generate(ReflectionClass $sourceClass, BindInterface $bind, string $postfix): string
     {
         $this->parseClass($sourceClass, $postfix);
@@ -51,7 +61,11 @@ final class AopCode
         return $this->getCodeText();
     }
 
-    /** @return void */
+    /**
+     * @return void
+     *
+     * @psalm-external-mutation-free
+     */
     private function add(string $text)
     {
         if ($text === '{') {
@@ -67,13 +81,18 @@ final class AopCode
         $this->code .= $text;
     }
 
-    /** @param  non-empty-string $code */
+    /**
+     * @param non-empty-string $code
+     *
+     * @psalm-external-mutation-free
+     */
     private function insert(string $code): void
     {
         $replacement = $code . '}';
         $this->code = (string) preg_replace('/}\s*$/', $replacement, $this->code);
     }
 
+    /** @psalm-external-mutation-free */
     private function addClassName(string $className, string $postfix): void
     {
         $newClassName = $className . $postfix;
@@ -128,6 +147,11 @@ final class AopCode
         }
     }
 
+    /**
+     * @param interface-string $interfaceName
+     *
+     * @psalm-external-mutation-free
+     */
     private function implementsInterface(string $interfaceName): void
     {
         $pattern = '/(class\s+[\w\s]+extends\s+\w+)(?:\s+implements\s+(.+))?/';
@@ -175,11 +199,13 @@ final class AopCode
         $this->insert(implode("\n", $interceptedMethods));
     }
 
+    /** @psalm-external-mutation-free */
     private function addIntercepterTrait(): void
     {
         $this->add(sprintf("{\n    use \%s;\n}\n", InterceptTrait::class));
     }
 
+    /** @psalm-external-mutation-free */
     private function getCodeText(): string
     {
         // close opened curly brace
