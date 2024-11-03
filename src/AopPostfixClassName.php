@@ -9,12 +9,21 @@ use ReflectionClass;
 use function crc32;
 use function filemtime;
 
+/**
+ * Fully qualified name including postfix
+ */
 final class AopPostfixClassName
 {
-    /** @var string  */
+    /**
+     * @var string
+     * @readonly
+     */
     public $fqn;
 
-    /** @var string  */
+    /**
+     * @var string
+     * @readonly
+     */
     public $postFix;
 
     /** @param class-string $class */
