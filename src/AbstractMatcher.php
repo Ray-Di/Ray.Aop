@@ -12,7 +12,8 @@ use function func_get_args;
 /**
  * Abstract matcher base class
  *
- * @psalm-type MatcherArguments = list<mixed>
+ * @psalm-type MatcherArguments = array<array-key, mixed>
+ * @psalm-type Arguments = array<array-key, mixed>
  */
 abstract class AbstractMatcher
 {
@@ -31,7 +32,7 @@ abstract class AbstractMatcher
      * Match class condition
      *
      * @param ReflectionClass<object> $class     Target class
-     * @param array<array-key, mixed> $arguments Matching condition arguments
+     * @param MatcherArguments        $arguments Matching condition arguments
      *
      * @return bool
      */
@@ -40,8 +41,8 @@ abstract class AbstractMatcher
     /**
      * Match method condition
      *
-     * @param ReflectionMethod        $method    Target method
-     * @param array<array-key, mixed> $arguments Matching condition arguments
+     * @param ReflectionMethod $method    Target method
+     * @param MatcherArguments $arguments Matching condition arguments
      *
      * @return bool
      */
@@ -50,7 +51,7 @@ abstract class AbstractMatcher
     /**
      * Return matching condition arguments
      *
-     * @return array<array-key, mixed>
+     * @return Arguments
      */
     public function getArguments(): array
     {
