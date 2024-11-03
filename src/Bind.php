@@ -71,10 +71,9 @@ final class Bind implements BindInterface
      */
     public function bindInterceptors(string $method, array $interceptors): BindInterface
     {
-        $this->bindings[$method] = ! array_key_exists($method, $this->bindings) ? $interceptors : array_merge(
-            $this->bindings[$method],
-            $interceptors
-        );
+        $this->bindings[$method] = ! array_key_exists($method, $this->bindings)
+            ? $interceptors
+            : array_merge($this->bindings[$method], $interceptors);
 
         return $this;
     }
