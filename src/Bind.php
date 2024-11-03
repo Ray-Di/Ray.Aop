@@ -83,6 +83,8 @@ final class Bind implements BindInterface
      * Get all method bindings
      *
      * @return MethodBindings
+     *
+     * @psalm-mutation-free
      */
     public function getBindings(): array
     {
