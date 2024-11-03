@@ -17,7 +17,7 @@ use function func_get_args;
  */
 abstract class AbstractMatcher
 {
-    /** @var array<array-key, mixed> */
+    /** @var MatcherArguments */
     protected $arguments = [];
 
     /**

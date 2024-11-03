@@ -10,7 +10,7 @@ use ReflectionMethod;
 /**
  * Matcher for annotations
  */
-final class AnnotatedMatcher extends BuiltinMatcher
+class AnnotatedMatcher extends BuiltinMatcher
 {
     /** @var class-string */
     public $annotation;

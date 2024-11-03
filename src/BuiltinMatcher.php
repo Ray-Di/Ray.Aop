@@ -11,6 +11,10 @@ use function assert;
 use function class_exists;
 use function ucwords;
 
+/**
+ * @psalm-suppress PropertyNotSetInConstructor
+ * @psalm-import-type MatcherArguments from AbstractMatcher
+ */
 class BuiltinMatcher extends AbstractMatcher
 {
     /** @var string */
@@ -19,7 +23,7 @@ class BuiltinMatcher extends AbstractMatcher
     /** @var AbstractMatcher */
     private $matcher;
 
-    /** @param mixed[] $arguments */
+    /** @param MatcherArguments $arguments */
     public function __construct(string $matcherName, array $arguments)
     {
         parent::__construct();
