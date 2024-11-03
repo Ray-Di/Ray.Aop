@@ -24,43 +24,87 @@ use function method_intercept; // @phpstan-ignore-line
 use function strcasecmp;
 use function sys_get_temp_dir;
 
+/**
+ * Aspect class manages aspect weaving and method interception
+ *
+ * @psalm-type MethodInterceptors = array<array-key, MethodInterceptor>
+ * @psalm-type MethodBindings = array<string, MethodInterceptors>
+ * @psalm-type ClassBindings = array<class-string, MethodBindings>
+ * @psalm-type MatcherConfig = array{
+ *   classMatcher: AbstractMatcher,
+ *   methodMatcher: AbstractMatcher,
+ *   interceptors: MethodInterceptors
+ * }
+ */
 final class Aspect
 {
-    /** @var string|null */
+    /**
+     * Temporary directory for generated proxy classes
+     *
+     * @var string|null
+     */
     private $tmpDir;
 
-    /** @var array<array{classMatcher: AbstractMatcher, methodMatcher: AbstractMatcher, interceptors: array<MethodInterceptor>}> */
+    /**
+     * Collection of matcher configurations
+     *
+     * @var array<array-key, MatcherConfig>
+     */
     private $matchers = [];
 
-    /** @var array<string, array<string, array<array-key, MethodInterceptor>>> */
+    /**
+     * Bound interceptors map
+     *
+     * @var ClassBindings
+     */
     private $bound = [];
 
+    /** @param string|null $tmpDir Directory for generated proxy classes */
     public function __construct(?string $tmpDir = null)
     {
         $this->tmpDir = $tmpDir ?? sys_get_temp_dir();
     }
 
-    /** @param array<MethodInterceptor> $interceptors */
+    /**
+     * Bind interceptors to matched methods
+     *
+     * @param AbstractMatcher    $classMatcher  Class matcher
+     * @param AbstractMatcher    $methodMatcher Method matcher
+     * @param MethodInterceptors $interceptors  List of interceptors
+     */
     public function bind(AbstractMatcher $classMatcher, AbstractMatcher $methodMatcher, array $interceptors): void
     {
-        $this->matchers[] = [
+        /** @psalm-var MatcherConfig $matcherConfig */
+        $matcherConfig = [
             'classMatcher' => $classMatcher,
             'methodMatcher' => $methodMatcher,
             'interceptors' => $interceptors,
         ];
+
+        $this->matchers[] = $matcherConfig;
     }
 
+    /**
+     * Weave aspects into classes in the specified directory
+     *
+     * @param string $classDir Target class directory
+     *
+     * @throws RuntimeException When Ray.Aop extension is not loaded
+     */
     public function weave(string $classDir): void
     {
         if (! extension_loaded('rayaop')) {
             throw new RuntimeException('Ray.Aop extension is not loaded. Cannot use weave() method.');
         }
 
-        $this->scanAndCompile($classDir);
+        $this->scanDirectory($classDir);
         $this->applyInterceptors();
     }
 
-    private function scanAndCompile(string $classDir): void
+    /**
+     * Scan directory and compile classes
+     */
+    private function scanDirectory(string $classDir): void
     {
         $files = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($classDir)
@@ -81,6 +125,11 @@ final class Aspect
         }
     }
 
+    /**
+     * Get class name from file
+     *
+     * @return class-string|null
+     */
     private function getClassNameFromFile(string $file): ?string
     {
         $declaredClasses = get_declared_classes();
@@ -93,6 +142,7 @@ final class Aspect
 
         foreach ($newClasses as $class) {
             if (strcasecmp(basename($file, '.php'), $class) === 0) {
+                /** @var class-string */
                 return $class;
             }
         }
@@ -100,6 +150,11 @@ final class Aspect
         return $newClasses ? end($newClasses) : null;
     }
 
+    /**
+     * Process class for interception
+     *
+     * @param class-string $className
+     */
     private function processClass(string $className): void
     {
         assert(class_exists($className));
@@ -110,7 +165,9 @@ final class Aspect
                 continue;
             }
 
-            foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            /** @var ReflectionMethod[] $methods */
+            $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
+            foreach ($methods as $method) {
                 if (! $matcher['methodMatcher']->matchesMethod($method, $matcher['methodMatcher']->getArguments())) {
                     continue;
                 }
@@ -120,6 +177,9 @@ final class Aspect
         }
     }
 
+    /**
+     * Apply interceptors to bound methods
+     */
     private function applyInterceptors(): void
     {
         if (! extension_loaded('rayaop')) {
@@ -127,21 +187,26 @@ final class Aspect
         }
 
         $dispatcher = new PeclDispatcher($this->bound);
+
         foreach ($this->bound as $className => $methods) {
             $methodNames = array_keys($methods);
             foreach ($methodNames as $methodName) {
                 assert($dispatcher instanceof MethodInterceptorInterface);
-                /** @psalm-suppress UndefinedFunction PECL-created function */
-                method_intercept($className, $methodName, $dispatcher); // @phpstan-ignore-line
+                /** @psalm-suppress UndefinedFunction */
+                method_intercept($className, $methodName, $dispatcher);  // @phpstan-ignore-line
             }
         }
     }
 
     /**
-     * @param class-string<T> $className
-     * @param list<mixed>     $args
+     * Create new instance with woven aspects
      *
-     * @return T
+     * @param class-string<T> $className Target class name
+     * @param list<mixed>     $args      Constructor arguments
+     *
+     * @return T New instance with aspects
+     *
+     * @throws RuntimeException When temporary directory is not set for PHP-based AOP
      *
      * @template T of object
      */
@@ -157,8 +222,10 @@ final class Aspect
     }
 
     /**
-     * @param class-string<T> $className
-     * @param array<mixed>    $args
+     * Create instance using PECL extension
+     *
+     * @param class-string<T>         $className
+     * @param array<array-key, mixed> $args
      *
      * @return T
      *
@@ -171,14 +238,19 @@ final class Aspect
         $this->processClass($className);
         $this->applyInterceptors();
 
+        /** @var T */
         return $instance;
     }
 
     /**
+     * Create instance using PHP-based implementation
+     *
      * @param class-string<T> $className
      * @param list<mixed>     $args
      *
      * @return T
+     *
+     * @throws RuntimeException When temporary directory is not set
      *
      * @template T of object
      */
@@ -191,21 +263,29 @@ final class Aspect
         $bind = $this->createBind($className);
         $weaver = new Weaver($bind, $this->tmpDir);
 
+        /** @psalm-var T */
         return $weaver->newInstance($className, $args);
     }
 
-    /** @param class-string $className */
+    /**
+     * Create bind instance for the given class
+     *
+     * @param class-string $className
+     */
     private function createBind(string $className): Bind
     {
         $bind = new Bind();
-        $reflection = new \Ray\Aop\ReflectionClass($className);
+        $reflection = new ReflectionClass($className);
 
         foreach ($this->matchers as $matcher) {
             if (! $matcher['classMatcher']->matchesClass($reflection, $matcher['classMatcher']->getArguments())) {
                 continue;
             }
 
-            foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            /** @var ReflectionMethod[] $methods */
+            $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
+
+            foreach ($methods as $method) {
                 if (! $matcher['methodMatcher']->matchesMethod($method, $matcher['methodMatcher']->getArguments())) {
                     continue;
                 }
