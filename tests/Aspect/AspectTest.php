@@ -10,6 +10,7 @@ use Ray\Aop\Aspect\Fake\src\FakeMyClass;
 use Ray\Aop\Matcher\AnyMatcher;
 use Ray\Aop\Matcher\StartsWithMatcher;
 
+use function dirname;
 use function get_class;
 
 class AspectTest extends TestCase
@@ -20,6 +21,11 @@ class AspectTest extends TestCase
     protected function setUp(): void
     {
         $this->aspect = new Aspect();
+    }
+
+    public function testTmpDir()
+    {
+        $this->assertInstanceOf(Aspect::class, new Aspect(dirname(__DIR__) . '/tmp'));
     }
 
     public function testNewInstance(): void
