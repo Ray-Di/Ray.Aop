@@ -24,7 +24,7 @@ final class ReflectiveMethodInvocation implements MethodInvocation
 {
     /**
      * @var T
-     * @re
+     * @readonly
      */
     private $object;
 
@@ -78,7 +78,6 @@ final class ReflectiveMethodInvocation implements MethodInvocation
         if ($this->object instanceof WeavedInterface) {
             $class = (new ReflectionObject($this->object))->getParentClass();
             assert($class instanceof ReflectionClass);
-//            assert(class_exists($class->name));
             $method = new ReflectionMethod($class->name, $this->method);
             $method->setObject($this->object);
 
@@ -137,6 +136,8 @@ final class ReflectiveMethodInvocation implements MethodInvocation
 
     /**
      * {@inheritDoc}
+     *
+     * @psalm-external-mutation-free
      */
     public function getThis()
     {
