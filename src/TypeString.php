@@ -65,6 +65,7 @@ final class TypeString
     public function getUnionType(ReflectionUnionType $type): string
     {
         $types = array_map(static function ($t) {
+            /** @psalm-suppress DocblockTypeContradiction */
             if ($t instanceof ReflectionIntersectionType) {
                 $types = $t->getTypes();
                 /** @var array<ReflectionNamedType>  $types */
