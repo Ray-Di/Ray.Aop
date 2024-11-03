@@ -41,7 +41,7 @@ final class Aspect
     /**
      * Temporary directory for generated proxy classes
      *
-     * @var string|null
+     * @var non-empty-string|null
      */
     private $tmpDir;
 
@@ -59,10 +59,17 @@ final class Aspect
      */
     private $bound = [];
 
-    /** @param string|null $tmpDir Directory for generated proxy classes */
+    /** @param non-empty-string|null $tmpDir Directory for generated proxy classes */
     public function __construct(?string $tmpDir = null)
     {
-        $this->tmpDir = $tmpDir ?? sys_get_temp_dir();
+        if ($tmpDir === null) {
+            $tmp = sys_get_temp_dir();
+            $this->tmpDir = $tmp !== '' ? $tmp : '/tmp';
+
+            return;
+        }
+
+        $this->tmpDir = $tmpDir;
     }
 
     /**

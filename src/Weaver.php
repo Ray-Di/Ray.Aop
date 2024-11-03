@@ -24,6 +24,7 @@ final class Weaver
     /** @var Compiler */
     private $compiler;
 
+    /** @param non-empty-string $classDir */
     public function __construct(BindInterface $bind, string $classDir)
     {
         $this->bind = $bind;
