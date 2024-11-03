@@ -32,7 +32,10 @@ use const PHP_VERSION_ID;
  */
 final class Compiler implements CompilerInterface
 {
-    /** @var non-empty-string */
+    /**
+     * @var non-empty-string
+     * @readonly
+     */
     public $classDir;
 
     /** @param  non-empty-string $classDir */

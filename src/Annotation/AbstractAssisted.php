@@ -14,6 +14,7 @@ abstract class AbstractAssisted
      * Add null default to listed parameters
      *
      * @var string[]
+     * @readonly
      */
     public $values;
 }

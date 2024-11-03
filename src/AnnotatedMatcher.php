@@ -12,7 +12,10 @@ use ReflectionMethod;
  */
 class AnnotatedMatcher extends BuiltinMatcher
 {
-    /** @var class-string */
+    /**
+     * @var class-string
+     * @readonly
+     */
     public $annotation;
 
     /**

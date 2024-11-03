@@ -6,13 +6,22 @@ namespace Ray\Aop;
 
 class Pointcut
 {
-    /** @var AbstractMatcher */
+    /**
+     * @var AbstractMatcher
+     * @readonly
+     */
     public $classMatcher;
 
-    /** @var AbstractMatcher */
+    /**
+     * @var AbstractMatcher
+     * @readonly
+     */
     public $methodMatcher;
 
-    /** @var array<MethodInterceptor|class-string<MethodInterceptor>> */
+    /**
+     * @var array<MethodInterceptor|class-string<MethodInterceptor>>
+     * @readonly
+     */
     public $interceptors = [];
 
     /** @param array<MethodInterceptor|class-string<MethodInterceptor>> $interceptors */
