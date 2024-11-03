@@ -23,7 +23,7 @@ class AspectTest extends TestCase
         $this->aspect = new Aspect();
     }
 
-    public function testTmpDir()
+    public function testTmpDir(): void
     {
         $this->assertInstanceOf(Aspect::class, new Aspect(dirname(__DIR__) . '/tmp'));
     }
