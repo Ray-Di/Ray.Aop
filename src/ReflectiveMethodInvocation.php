@@ -104,7 +104,7 @@ final class ReflectiveMethodInvocation implements MethodInvocation
      *
      * @return NamedArguments
      *
-     * @salm-mutation-free
+     * @psalm-mutation-free
      */
     public function getNamedArguments(): ArrayObject
     {
