@@ -36,6 +36,7 @@ final class MethodSignatureString
         $this->typeString = new TypeString($nullableStr);
     }
 
+    /** @psalm-external-mutation-free  */
     public function get(ReflectionMethod $method): string
     {
         $signatureParts = $this->getDocComment($method);
@@ -46,7 +47,11 @@ final class MethodSignatureString
         return implode(' ', $signatureParts);
     }
 
-    /** @return array<string> */
+    /**
+     * @return array<string>
+     *
+     * @psalm-external-mutation-free
+     */
     private function getDocComment(ReflectionMethod $method): array
     {
         $docComment = $method->getDocComment();
@@ -80,7 +85,11 @@ final class MethodSignatureString
         $signatureParts[] = self::INDENT;
     }
 
-    /** @param array<string> $signatureParts */
+    /**
+     * @param array<string> $signatureParts
+     *
+     * @psalm-external-mutation-free
+     */
     private function addAccessModifiers(ReflectionMethod $method, array &$signatureParts): void
     {
         $modifier = implode(' ', Reflection::getModifierNames($method->getModifiers()));
@@ -106,6 +115,8 @@ final class MethodSignatureString
     /**
      * @param string|int $name
      * @param mixed      $value
+     *
+     * @psalm-external-mutation-free
      */
     private function formatArg($name, $value): string
     {
