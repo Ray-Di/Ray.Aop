@@ -35,6 +35,7 @@ use function sys_get_temp_dir;
  *   methodMatcher: AbstractMatcher,
  *   interceptors: MethodInterceptors
  * }
+ * @psalm-type Arguments = array<array-key, mixed>
  */
 final class Aspect
 {
@@ -229,8 +230,8 @@ final class Aspect
     /**
      * Create instance using PECL extension
      *
-     * @param class-string<T>         $className
-     * @param array<array-key, mixed> $args
+     * @param class-string<T> $className
+     * @param Arguments       $args
      *
      * @return T
      *
