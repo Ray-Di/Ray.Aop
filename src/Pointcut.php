@@ -4,24 +4,16 @@ declare(strict_types=1);
 
 namespace Ray\Aop;
 
+/** @psalm-immutable */
 class Pointcut
 {
-    /**
-     * @var AbstractMatcher
-     * @readonly
-     */
+    /** @var AbstractMatcher */
     public $classMatcher;
 
-    /**
-     * @var AbstractMatcher
-     * @readonly
-     */
+    /** @var AbstractMatcher */
     public $methodMatcher;
 
-    /**
-     * @var array<MethodInterceptor|class-string<MethodInterceptor>>
-     * @readonly
-     */
+    /** @var array<MethodInterceptor|class-string<MethodInterceptor>> */
     public $interceptors = [];
 
     /** @param array<MethodInterceptor|class-string<MethodInterceptor>> $interceptors */
