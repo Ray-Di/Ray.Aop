@@ -204,7 +204,7 @@ final class Aspect
      *
      * @return T New instance with aspects
      *
-     * @throws RuntimeException When temporary directory is not set for PHP-based AOP
+     * @throws RuntimeException When temporary directory is not set for PHP-based AOP.
      *
      * @template T of object
      */
@@ -236,7 +236,7 @@ final class Aspect
         $this->processClass($className);
         $this->applyInterceptors();
 
-        /** @var T */
+        /** @var T $instance */
         return $instance;
     }
 
@@ -248,7 +248,7 @@ final class Aspect
      *
      * @return T
      *
-     * @throws RuntimeException When temporary directory is not set
+     * @throws RuntimeException When temporary directory is not set.
      *
      * @template T of object
      */
