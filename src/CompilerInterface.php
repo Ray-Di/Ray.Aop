@@ -9,29 +9,6 @@ namespace Ray\Aop;
  * @psalm-import-type MethodBindings from Aspect
  * @psalm-import-type ClassBindings from Aspect
  * @psalm-import-type MatcherConfig from Aspect
- * @psalm-type AspectBind = array{
- *   bind: Bind,
- *   pointcut: array{
- *     method: string,
- *     interceptors: MethodInterceptors
- *   }
- * }
- * @psalm-type BindCode = array{
- *   interface: class-string,
- *   name: string|null,
- *   target: class-string|string|null,
- *   scope: string|null,
- *   bindWith: string,
- *   type: 'to'|'toProvider'|'toInstance'|'toConstructor'|'toNull'
- * }
- * @psalm-type AspectCode = array{
- *   target: class-string,
- *   methods: MethodBindings
- * }
- * @psalm-type CompileResult = array{
- *   binds: array<string, BindCode>,
- *   aspectBinds: array<string, AspectCode>
- * }
  * @psalm-type ConstructorArguments = list<mixed>
  */
 interface CompilerInterface
