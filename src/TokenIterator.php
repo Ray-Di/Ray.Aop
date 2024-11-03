@@ -17,6 +17,7 @@ final class TokenIterator extends ArrayIterator
 {
     /**
      * @return array{int, string}
+     *
      * @psalm-external-mutation-free
      */
     public function getToken(): array
