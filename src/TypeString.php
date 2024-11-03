@@ -20,10 +20,16 @@ use function sprintf;
  */
 final class TypeString
 {
-    /** @var string */
+    /**
+     * @var string
+     * @readonly
+     */
     private $nullableStr;
 
-    /** @var bool */
+    /**
+     * @var bool
+     * @readonly
+     */
     private $hasUnionType;
 
     public function __construct(string $nullableStr)
