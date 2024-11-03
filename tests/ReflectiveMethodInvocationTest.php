@@ -11,7 +11,7 @@ use ReflectionMethod;
 
 class ReflectiveMethodInvocationTest extends TestCase
 {
-    /** @var ReflectiveMethodInvocation */
+    /** @var ReflectiveMethodInvocation<FakeClass> */
     protected $invocation;
 
     /** @var FakeClass */
