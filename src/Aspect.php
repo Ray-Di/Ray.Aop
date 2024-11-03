@@ -262,10 +262,6 @@ final class Aspect
      */
     private function newInstanceWithPhp(string $className, array $args): object
     {
-        if ($this->tmpDir === null) {
-            throw new RuntimeException('Temporary directory is not set. It is required for PHP-based AOP.');
-        }
-
         $bind = $this->createBind($className);
         $weaver = new Weaver($bind, $this->tmpDir);
 
