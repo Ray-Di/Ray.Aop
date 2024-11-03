@@ -74,7 +74,6 @@ final class Aspect
      */
     public function bind(AbstractMatcher $classMatcher, AbstractMatcher $methodMatcher, array $interceptors): void
     {
-        /** @psalm-var MatcherConfig $matcherConfig */
         $matcherConfig = [
             'classMatcher' => $classMatcher,
             'methodMatcher' => $methodMatcher,
