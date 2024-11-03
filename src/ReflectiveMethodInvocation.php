@@ -24,7 +24,7 @@ final class ReflectiveMethodInvocation implements MethodInvocation
 {
     /**
      * @var T
-     * @readonly
+     * @re
      */
     private $object;
 
@@ -40,7 +40,10 @@ final class ReflectiveMethodInvocation implements MethodInvocation
      */
     private $method;
 
-    /** @var InterceptorList */
+    /**
+     * @var InterceptorList
+     * @psalm-readonly-allow-private-mutation
+     */
     private $interceptors;
 
     /**
