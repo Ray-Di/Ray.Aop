@@ -88,7 +88,7 @@ final class Aspect
      *
      * @param string $classDir Target class directory
      *
-     * @throws RuntimeException When Ray.Aop extension is not loaded
+     * @throws RuntimeException When Ray.Aop extension is not loaded.
      */
     public function weave(string $classDir): void
     {
@@ -141,7 +141,6 @@ final class Aspect
 
         foreach ($newClasses as $class) {
             if (strcasecmp(basename($file, '.php'), $class) === 0) {
-                /** @var class-string */
                 return $class;
             }
         }
