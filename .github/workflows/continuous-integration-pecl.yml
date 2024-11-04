@@ -117,6 +117,3 @@ jobs:
             echo "Build extension and run failed. Please check the logs for more information."
             exit 1
           fi
-
-      - name: Run additional script
-        run: php 'demo/05-pecl.php'
