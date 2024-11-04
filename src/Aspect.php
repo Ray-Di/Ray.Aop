@@ -83,6 +83,7 @@ final class Aspect
      * @param non-empty-string $classDir Target class directory
      *
      * @throws RuntimeException When Ray.Aop extension is not loaded.
+     * @codeCoverageIgnore
      */
     public function weave(string $classDir): void
     {

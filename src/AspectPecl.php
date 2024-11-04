@@ -20,6 +20,7 @@ use function method_intercept;
  * @psalm-type ClassBoundInterceptors = array<class-string, MethodBoundInterceptors>
  * @psalm-import-type MatcherConfigList from Aspect
  * @psalm-import-type MethodInterceptors from Aspect
+ * @codeCoverageIgnore
  */
 final class AspectPecl
 {
@@ -42,7 +43,7 @@ final class AspectPecl
     {
         foreach (new ClassList($classDir) as $className) {
             $boundInterceptors = $this->getBoundInterceptors($className, $mathcers);
-            $this->applyInterceptors($boundInterceptors);
+            $this->apply($boundInterceptors);
         }
     }
 
@@ -84,7 +85,7 @@ final class AspectPecl
      *
      * @param ClassBoundInterceptors $boundInterceptors
      */
-    private function applyInterceptors(array $boundInterceptors): void
+    private function apply(array $boundInterceptors): void
     {
         $dispatcher = new PeclDispatcher($boundInterceptors);
         assert(function_exists('\method_intercept')); // PECL Ray.Aop extension
