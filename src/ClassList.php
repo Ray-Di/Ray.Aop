@@ -29,8 +29,7 @@ final class ClassList implements IteratorAggregate
     {
         $content = (string) file_get_contents($file);
 
-        // PHPタグの外のコンテンツを除去
-        if (str_contains($content, '<?php')) {
+        if (strpos($content, '<?php') !== false) {
             $content = strstr($content, '<?php');
         }
 
