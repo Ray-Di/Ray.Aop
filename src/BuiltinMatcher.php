@@ -17,10 +17,16 @@ use function ucwords;
  */
 class BuiltinMatcher extends AbstractMatcher
 {
-    /** @var string */
+    /**
+     * @var string
+     * @readonly
+     */
     private $matcherName;
 
-    /** @var AbstractMatcher */
+    /**
+     * @var AbstractMatcher
+     * @readonly
+     */
     private $matcher;
 
     /** @param MatcherArguments $arguments */
