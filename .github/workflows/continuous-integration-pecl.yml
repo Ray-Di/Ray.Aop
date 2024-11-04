@@ -43,6 +43,18 @@ jobs:
           make
         continue-on-error: true
 
+      # Run the demo script
+      - name: Run demo script
+        run: |
+          # Running demo script under Valgrind
+          valgrind \
+            --leak-check=full \
+            --show-leak-kinds=all \
+            --track-origins=yes \
+            php -n \
+              -d extension=./ext-rayaop/modules/rayaop.so \
+              demo/05-pecl.php
+
       # Combined step for PHPUnit and Valgrind analysis
       - name: Run Tests with Valgrind
         if: success() || failure()
