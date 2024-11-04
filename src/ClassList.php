@@ -10,17 +10,24 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
+use function array_filter;
 use function class_exists;
 use function count;
 use function file_get_contents;
+use function implode;
 use function is_array;
 use function token_get_all;
-use function implode;
-use function array_filter;
+
+use const TOKEN_PARSE;
 
 /** @implements IteratorAggregate<class-string> */
 final class ClassList implements IteratorAggregate
 {
+    public const T_STRING1 = 313;
+    public const T_STRING2 = 316;
+    public const T_NS_SEPARATOR1 = 379;
+    public const T_NS_SEPARATOR2 = 382;
+
     /**
      * Return FQCN from PHP file
      */
@@ -37,9 +44,10 @@ final class ClassList implements IteratorAggregate
             $token = $tokens[$position];
             if (! is_array($token)) {
                 if ($collectingNamespace && $token === ';') {
-                    $namespace = implode('\\', array_filter($namespaceBuffer, fn($part) => $part !== ''));
+                    $namespace = implode('\\', array_filter($namespaceBuffer, static fn ($part) => $part !== ''));
                     $collectingNamespace = false;
                 }
+
                 $position++;
                 continue;
             }
@@ -53,12 +61,20 @@ final class ClassList implements IteratorAggregate
                 case 'class':
                     $className = $tokens[$position + 2][1];
                     $fqcn = $namespace !== '' ? $namespace . '\\' . $className : $className;
+
                     return class_exists($fqcn) ? $fqcn : null;
+
                 default:
-                    if ($collectingNamespace && $token[0] === T_STRING || $token[0] === T_NS_SEPARATOR) {
+                    if (
+                        $collectingNamespace && $token[0] === self::T_STRING1
+                        || $collectingNamespace && $token[0] === self::T_STRING2
+                        || $token[0] === self::T_NS_SEPARATOR1
+                        || $token[0] === self::T_NS_SEPARATOR2
+                    ) {
                         $namespaceBuffer[] = $token[1];
                     }
             }
+
             $position++;
         }
 
