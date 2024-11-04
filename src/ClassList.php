@@ -75,9 +75,7 @@ final class ClassList implements IteratorAggregate
         $this->directory = $directory;
     }
 
-    /**
-     * @return Generator<class-string>
-     */
+    /** @return Generator<class-string> */
     public function getIterator(): Generator
     {
         $files = new RegexIterator(
@@ -88,9 +86,11 @@ final class ClassList implements IteratorAggregate
         /** @var SplFileInfo $file */
         foreach ($files as $file) {
             $className = self::from($file->getPathname());
-            if ($className !== null && class_exists($className)) {
-                yield $className;
+            if ($className === null || ! class_exists($className)) {
+                continue;
             }
+
+            yield $className;
         }
     }
 }
