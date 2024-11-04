@@ -12,28 +12,25 @@ use function in_array;
 use function is_array;
 use function token_get_all;
 
-use function var_dump;
-use const T_ABSTRACT;
 use const T_CLASS;
 use const T_COMMENT;
 use const T_DOC_COMMENT;
-use const T_FINAL;
 use const T_NAMESPACE;
 use const T_STRING;
 use const T_WHITESPACE;
+use const TOKEN_PARSE;
 
 /**
+ * Extract fully qualified class name from file
+ *
  * @psalm-type TokenValue = array{0: int, 1: string, 2: int}
  * @psalm-type Token = TokenValue|string
  * @psalm-type Tokens = array<int, Token>
+ * @psalm-type ParserResult = array{string, int}
  */
 final class ClassName
 {
-    /** @var array<int, int> */
-    private const NAMESPACE_TOKENS = [
-        316,  // T_NAME_QUALIFIED (PHP 8.0+)
-        375,  // Alternative T_NAME_QUALIFIED on some platforms
-    ];
+    private const T_NAME_QUALIFIED = 316;
 
     public static function from(string $filePath): ?string
     {
@@ -42,31 +39,30 @@ final class ClassName
         }
 
         /** @var Tokens $tokens */
-        $tokens = token_get_all(file_get_contents($filePath), TOKEN_PARSE);
-        var_dump($tokens);
+        $tokens = token_get_all(file_get_contents($filePath), TOKEN_PARSE); // @phpstan-ignore-line
+        $count = count($tokens);
         $position = 0;
         $namespace = '';
 
-        while ($position < count($tokens)) {
+        while ($position < $count) {
             $token = $tokens[$position];
             if (! is_array($token)) {
                 $position++;
                 continue;
             }
 
-            if ($token[0] === T_NAMESPACE) {
-                $namespace = self::parseNamespace($tokens, $position + 1);
-                $position++;
-                continue;
-            }
-
-            if ($token[0] === T_CLASS) {
-                $className = self::parseClassName($tokens, $position + 1);
-                if ($className === null) {
-                    return null;
-                }
-
-                return $namespace === '' ? $className : $namespace . '\\' . $className;
+            switch ($token[0]) {
+                case T_NAMESPACE:
+                    $namespaceResult = self::parseNamespace($tokens, $position + 1, $count);
+                    /** @var string */
+                    $namespace = $namespaceResult[0];
+                    $position = $namespaceResult[1];
+                    continue 2;
+                case T_CLASS:
+                    $className = self::parseClassName($tokens, $position + 1, $count);
+                    if ($className !== null) {
+                        return $namespace !== '' ? $namespace . '\\' . $className : $className;
+                    }
             }
 
             $position++;
@@ -76,74 +72,92 @@ final class ClassName
     }
 
     /**
+     * Parse namespace from tokens
+     *
      * @param Tokens $tokens
+     *
+     * @return ParserResult Array containing [namespace, new position]
      */
-    private static function parseNamespace(array $tokens, int $position): string
+    private static function parseNamespace(array $tokens, int $position, int $count): array
     {
-        $token = $tokens[$position] ?? null;
-        if ($token === null) {
-            return '';
+        $position = self::skipWhitespace($tokens, $position, $count);
+        if ($position >= $count) {
+            return ['', $position];
         }
 
-        // Skip whitespace
-        while (
-            is_array($token)
-            && $token[0] === T_WHITESPACE
-            && isset($tokens[++$position])
-        ) {
-            $token = $tokens[$position];
+        $token = $tokens[$position];
+        if (! is_array($token)) {
+            return ['', $position];
         }
 
-        // Check for qualified namespace token
-        if (is_array($token) && in_array($token[0], self::NAMESPACE_TOKENS, true)) {
-            return $token[1];
+        // Qualified namespace token (PHP 8.0+)
+        if ($token[0] === self::T_NAME_QUALIFIED) {
+            return [$token[1], $position + 1];
         }
 
-        // Parse namespace parts
-        $parts = [];
-        while (isset($tokens[$position])) {
+        // Legacy namespace parsing
+        $namespaceParts = [];
+        while ($position < $count) {
             $token = $tokens[$position];
 
-            if (is_string($token)) {
+            if (! is_array($token)) {
                 if ($token === ';' || $token === '{') {
                     break;
                 }
+
                 if ($token === '\\') {
-                    $parts[] = '\\';
+                    $namespaceParts[] = '\\';
                 }
-            } elseif (
-                is_array($token)
-                && $token[0] === T_STRING
-                && $token[1] !== ''
-            ) {
-                $parts[] = $token[1];
+
+                $position++;
+                continue;
+            }
+
+            if ($token[0] === T_STRING) {
+                $namespaceParts[] = $token[1];
             }
 
             $position++;
         }
 
-        return implode('', $parts);
+        return [implode('', $namespaceParts), $position];
     }
 
     /**
+     * Parse class name from tokens
+     *
      * @param Tokens $tokens
      */
-    private static function parseClassName(array $tokens, int $position): ?string
+    private static function parseClassName(array $tokens, int $position, int $count): ?string
     {
-        $token = $tokens[$position] ?? null;
-        if ($token === null) {
+        $position = self::skipWhitespace($tokens, $position, $count);
+        if ($position >= $count) {
             return null;
         }
 
-        // Skip whitespace
-        while (
-            is_array($token)
-            && $token[0] === T_WHITESPACE
-            && isset($tokens[++$position])
-        ) {
-            $token = $tokens[$position];
+        $token = $tokens[$position];
+        if (! is_array($token)) {
+            return null;
         }
 
-        return is_array($token) ? $token[1] : null;
+        return $token[1];
+    }
+
+    /**
+     * Skip whitespace and comments
+     *
+     * @param Tokens $tokens
+     */
+    private static function skipWhitespace(array $tokens, int $position, int $count): int
+    {
+        while (
+            $position < $count &&
+            is_array($tokens[$position]) &&
+            in_array($tokens[$position][0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)
+        ) {
+            $position++;
+        }
+
+        return $position;
     }
 }
