@@ -6,6 +6,9 @@ namespace Ray\Aop;
 
 use PHPUnit\Framework\TestCase;
 
+use function class_exists;
+use function iterator_to_array;
+
 class ClassListTest extends TestCase
 {
     public function testGetIterator(): void
