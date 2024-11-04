@@ -12,6 +12,7 @@ use function in_array;
 use function is_array;
 use function token_get_all;
 
+use function var_dump;
 use const T_CLASS;
 use const T_COMMENT;
 use const T_DOC_COMMENT;
@@ -40,6 +41,7 @@ final class ClassName
 
         /** @var Tokens $tokens */
         $tokens = token_get_all(file_get_contents($filePath), TOKEN_PARSE); // @phpstan-ignore-line
+        var_dump($tokens);
         $count = count($tokens);
         $position = 0;
         $namespace = '';
