@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Ray\Aop;
 
 use PHPUnit\Framework\TestCase;
+
 use function file_exists;
 use function file_put_contents;
 use function glob;
 use function iterator_to_array;
 use function mkdir;
 use function rmdir;
+use function substr;
 use function sys_get_temp_dir;
 use function uniqid;
 use function unlink;
@@ -23,16 +25,19 @@ class ClassListTest extends TestCase
     protected function setUp(): void
     {
         $this->tempDir = sys_get_temp_dir() . '/class_list_test_' . uniqid();
-        if (! file_exists($this->tempDir)) {
-            mkdir($this->tempDir);
+        if (file_exists($this->tempDir)) {
+            return;
         }
+
+        mkdir($this->tempDir);
     }
 
     protected function tearDown(): void
     {
-        foreach (glob($this->tempDir . '/*.php') as $file) {
+        foreach (glob($this->tempDir . '/*.php') as $file) { // @phpstan-ignore-line
             unlink($file);
         }
+
         rmdir($this->tempDir);
     }
 
