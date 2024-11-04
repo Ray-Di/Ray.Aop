@@ -115,7 +115,7 @@ class AspectTest extends TestCase
             (new Matcher())->any(),
             [new FakeMyInterceptor()]
         );
-        $aspect->weave(__DIR__ . '/Fake/src');
+        $aspect->weave(__DIR__ . '/Fake');
         $billing = $aspect->newInstance(FakeMyClass::class);
         $this->assertInstanceOf(FakeMyClass::class, $billing);
     }
