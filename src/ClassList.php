@@ -8,6 +8,7 @@ use Generator;
 use IteratorAggregate;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use RegexIterator;
 use SplFileInfo;
 
 use function class_exists;
@@ -22,33 +23,41 @@ use function trim;
 /** @implements IteratorAggregate<class-string> */
 final class ClassList implements IteratorAggregate
 {
+    private const MULTI_LINE_COMMENT_PATTERN = '/\/\*.*?\*\//s';
+    private const SINGLE_LINE_COMMENT_PATTERN = '/\/\/.*$/m';
+    private const STRING_LITERAL_PATTERN = '/([\'"])((?:\\\1|.)*?)\1/s';
+    private const NAMESPACE_PATTERN = '/namespace\s+([a-zA-Z0-9\\\\_ ]+?);/s';
+    private const CLASS_NAME_PATTERN = '/class\s+([a-zA-Z0-9_]+)(?:\s+extends|\s+implements|\s*{)/s';
+
     /**
-     * Return FQCN from PHP file
+     * Extracts the Fully Qualified Class Name (FQCN) from a PHP file.
      */
     public static function from(string $file): ?string
     {
-        $content = (string) file_get_contents($file);
+        $content = file_get_contents($file);
+        if ($content === false) {
+            return null;
+        }
 
         if (strpos($content, '<?php') !== false) {
             $content = strstr($content, '<?php');
         }
 
-        $content = (string) $content;
-        // コメントを除去
-        $content = preg_replace('/\/\*.*?\*\//s', '', $content); // 複数行コメント
-        $content = preg_replace('/\/\/.*$/m', '', (string) $content);     // 単行コメント
+        // Remove comments
+        $content = preg_replace(self::MULTI_LINE_COMMENT_PATTERN, '', (string) $content); // Multi-line comments
+        $content = preg_replace(self::SINGLE_LINE_COMMENT_PATTERN, '', (string) $content); // Single-line comments
 
-        // 文字列リテラルを除去
-        $content = preg_replace('/([\'"])((?:\\\1|.)*?)\1/s', '', (string) $content);
+        // Remove string literals
+        $content = preg_replace(self::STRING_LITERAL_PATTERN, '', (string) $content);
 
-        // namespace取得
+        // Extract namespace
         $namespace = '';
-        if (preg_match('/namespace\s+([a-zA-Z0-9\\\\_ ]+?);/s', (string) $content, $matches)) {
-            $namespace = trim(str_replace(['\n', '\r', ' '], '', $matches[1]));
+        if (preg_match(self::NAMESPACE_PATTERN, (string) $content, $matches)) {
+            $namespace = trim(str_replace(["\n", "\r", ' '], '', $matches[1]));
         }
 
-        // クラス名取得
-        if (preg_match('/class\s+([a-zA-Z0-9_]+)(?:\s+extends|\s+implements|\s*{)/s', (string) $content, $matches)) {
+        // Extract class name
+        if (preg_match(self::CLASS_NAME_PATTERN, (string) $content, $matches)) {
             $className = $matches[1];
             $fqcn = $namespace !== '' ? $namespace . '\\' . $className : $className;
 
@@ -66,29 +75,22 @@ final class ClassList implements IteratorAggregate
         $this->directory = $directory;
     }
 
-    /** @return Generator<class-string> */
+    /**
+     * @return Generator<class-string>
+     */
     public function getIterator(): Generator
     {
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($this->directory)
+        $files = new RegexIterator(
+            new RecursiveIteratorIterator(new RecursiveDirectoryIterator($this->directory)),
+            '/\.php$/'
         );
 
         /** @var SplFileInfo $file */
         foreach ($files as $file) {
-            if ($file->isDir() || $file->getExtension() !== 'php') {
-                continue;
-            }
-
             $className = self::from($file->getPathname());
-            if ($className === null) {
-                continue;
+            if ($className !== null && class_exists($className)) {
+                yield $className;
             }
-
-            if (! class_exists($className)) {
-                continue;
-            }
-
-            yield $className;
         }
     }
 }
