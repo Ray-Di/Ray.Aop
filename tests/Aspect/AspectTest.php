@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Ray\Aop\Annotation\FakeClassMarker;
 use Ray\Aop\Annotation\FakeMarker;
 use Ray\Aop\Aspect\Fake\src\FakeMyClass;
+use Ray\Aop\Exception\NotWritableException;
 use Ray\Aop\Matcher\AnyMatcher;
 use Ray\Aop\Matcher\StartsWithMatcher;
 
@@ -27,6 +28,12 @@ class AspectTest extends TestCase
     public function testTmpDir(): void
     {
         $this->assertInstanceOf(Aspect::class, new Aspect(dirname(__DIR__) . '/tmp'));
+    }
+
+    public function testTmpDirNotWritable(): void
+    {
+        $this->expectException(NotWritableException::class);
+        new Aspect('/__INVALID_DIR__');
     }
 
     public function testNewInstance(): void

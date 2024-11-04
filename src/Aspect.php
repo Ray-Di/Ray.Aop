@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Ray\Aop;
 
+use Ray\Aop\Exception\NotWritableException;
 use ReflectionClass;
 use ReflectionMethod;
 use RuntimeException;
 
+use function file_exists;
+use function is_writable;
 use function sys_get_temp_dir;
 
 /**
@@ -46,9 +49,11 @@ final class Aspect
     {
         if ($tmpDir === null) {
             $tmp = sys_get_temp_dir();
-            $this->tmpDir = $tmp !== '' ? $tmp : '/tmp';
+            $tmpDir = $tmp !== '' ? $tmp : '/tmp';
+        }
 
-            return;
+        if (! file_exists($tmpDir) || ! is_writable($tmpDir)) {
+            throw new NotWritableException("{$tmpDir} is not writable.");
         }
 
         $this->tmpDir = $tmpDir;
