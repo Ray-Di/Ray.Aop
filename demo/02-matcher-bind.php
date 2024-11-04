@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace Ray\Aop\Demo;
 
 use Ray\Aop\Aspect;
-use Ray\Aop\Bind;
-use Ray\Aop\Compiler;
 use Ray\Aop\Matcher;
 use RuntimeException;
-
 use const PHP_EOL;
 
 require __DIR__ . '/bootstrap.php';
