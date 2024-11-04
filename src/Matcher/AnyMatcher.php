@@ -62,6 +62,7 @@ final class AnyMatcher extends AbstractMatcher
         return strpos($name, '__') === 0;
     }
 
+    /** @psalm-external-mutation-free */
     private function isBuiltinMethod(string $name): bool
     {
         return in_array($name, self::$builtinMethods, true);
