@@ -104,6 +104,10 @@ class AspectTest extends TestCase
         $this->assertInstanceOf(FakeMyClass::class, $billing);
     }
 
+    /**
+     * @requires extension rayaop
+     * @requires PHP 8.1
+     */
     public function testNotClassMatch(): void
     {
         $aspect = new Aspect();
@@ -117,6 +121,10 @@ class AspectTest extends TestCase
         $this->assertInstanceOf(FakeMyClass::class, $billing);
     }
 
+    /**
+     * @requires extension rayaop
+     * @requires PHP 8.1
+     */
     public function testNotMethodMatch(): void
     {
         $aspect = new Aspect();
