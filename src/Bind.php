@@ -4,40 +4,56 @@ declare(strict_types=1);
 
 namespace Ray\Aop;
 
-use Doctrine\Common\Annotations\AnnotationException;
-
 use function array_key_exists;
 use function array_merge;
 use function serialize;
 
+/**
+ * Bind class manages method interception bindings
+ *
+ * @psalm-import-type MethodInterceptors from Aspect
+ * @psalm-import-type MethodBindings from Aspect
+ * @psalm-type Pointcuts = array<Pointcut>
+ */
 final class Bind implements BindInterface
 {
-    /** @var array<string, array<MethodInterceptor>> */
+    /**
+     * Method interceptor bindings
+     *
+     * @var MethodBindings
+     */
     private $bindings = [];
 
-    /** @var MethodMatch */
+    /**
+     * @var MethodMatch
+     * @readonly
+     */
     private $methodMatch;
 
-    /** @throws AnnotationException */
     public function __construct()
     {
         $this->methodMatch = new MethodMatch($this);
     }
 
-    /** @return list<string> */
+    /** @return list<'bindings'> */
     public function __sleep(): array
     {
         return ['bindings'];
     }
 
     /**
-     * {@inheritDoc}
+     * Bind pointcuts to methods
+     *
+     * @param class-string $class     Target class
+     * @param Pointcuts    $pointcuts List of pointcuts
      */
     public function bind(string $class, array $pointcuts): BindInterface
     {
         $pointcuts = $this->getAnnotationPointcuts($pointcuts);
         $reflectionClass = new ReflectionClass($class);
-        $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
+
+        $methods = $reflectionClass->getMethods(\ReflectionMethod::IS_PUBLIC);
+
         foreach ($methods as $method) {
             if ($method->getName() === '__construct') {
                 continue;
@@ -51,20 +67,26 @@ final class Bind implements BindInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Bind interceptors to a method
+     *
+     * @param string             $method       Method name
+     * @param MethodInterceptors $interceptors List of interceptors
      */
     public function bindInterceptors(string $method, array $interceptors): BindInterface
     {
-        $this->bindings[$method] = ! array_key_exists($method, $this->bindings) ? $interceptors : array_merge(
-            $this->bindings[$method],
-            $interceptors
-        );
+        $this->bindings[$method] = ! array_key_exists($method, $this->bindings)
+            ? $interceptors
+            : array_merge($this->bindings[$method], $interceptors);
 
         return $this;
     }
 
     /**
-     * {@inheritDoc}
+     * Get all method bindings
+     *
+     * @return MethodBindings
+     *
+     * @psalm-mutation-free
      */
     public function getBindings(): array
     {
@@ -72,7 +94,7 @@ final class Bind implements BindInterface
     }
 
     /**
-     * {@inheritDoc}
+     * Get serialized representation of bindings
      */
     public function __toString(): string
     {
@@ -82,9 +104,9 @@ final class Bind implements BindInterface
     /**
      * @param Pointcut[] $pointcuts
      *
-     * @return Pointcut[]
+     * @return Pointcuts
      */
-    public function getAnnotationPointcuts(array &$pointcuts): array
+    private function getAnnotationPointcuts(array $pointcuts): array
     {
         $keyPointcuts = [];
         foreach ($pointcuts as $key => $pointcut) {

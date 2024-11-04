@@ -19,10 +19,12 @@ interface MethodInterceptor extends Interceptor
      *
      * Polite implementations would certainly like to invoke {@link Joinpoint#proceed()}.
      *
-     * @param MethodInvocation $invocation the method invocation joinpoint
+     * @param MethodInvocation<T> $invocation the method invocation joinpoint
      *
      * @return mixed the result of the call to {@link *               Joinpoint#proceed()}, might be intercepted by the
      *               interceptor
+     *
+     * @template T of object
      */
     public function invoke(MethodInvocation $invocation);
 }

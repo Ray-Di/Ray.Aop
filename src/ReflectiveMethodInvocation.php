@@ -11,29 +11,52 @@ use ReflectionObject;
 use function array_shift;
 use function assert;
 use function call_user_func_array;
-use function class_exists;
 use function is_callable;
 
+/**
+ * @template T of object
+ * @psalm-type ArgumentList = ArrayObject<int, mixed>
+ * @psalm-type NamedArguments = ArrayObject<non-empty-string, mixed>
+ * @psalm-type InterceptorList = array<MethodInterceptor>
+ * @implements MethodInvocation<T>
+ */
 final class ReflectiveMethodInvocation implements MethodInvocation
 {
-    /** @var object */
+    /**
+     * @var T
+     * @readonly
+     */
     private $object;
 
-    /** @var ArrayObject<int, mixed> */
+    /**
+     * @var ArgumentList
+     * @readonly
+     */
     private $arguments;
 
-    /** @var string */
+    /**
+     * @var non-empty-string
+     * @readonly
+     */
     private $method;
 
-    /** @var MethodInterceptor[] */
+    /**
+     * @var InterceptorList
+     * @psalm-readonly-allow-private-mutation
+     */
     private $interceptors;
 
-    /** @var callable */
+    /**
+     * @var callable(mixed...): mixed
+     * @readonly
+     */
     private $callable;
 
     /**
-     * @param array<MethodInterceptor> $interceptors
-     * @param array<int, mixed>        $arguments
+     * @param T                 $object       Target object
+     * @param non-empty-string  $method       Method name
+     * @param array<int, mixed> $arguments    Method arguments
+     * @param InterceptorList   $interceptors Method interceptors
      */
     public function __construct(
         object $object,
@@ -50,15 +73,11 @@ final class ReflectiveMethodInvocation implements MethodInvocation
         $this->interceptors = $interceptors;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getMethod(): ReflectionMethod
     {
         if ($this->object instanceof WeavedInterface) {
             $class = (new ReflectionObject($this->object))->getParentClass();
             assert($class instanceof ReflectionClass);
-            assert(class_exists($class->name));
             $method = new ReflectionMethod($class->name, $this->method);
             $method->setObject($this->object);
 
@@ -70,6 +89,10 @@ final class ReflectiveMethodInvocation implements MethodInvocation
 
     /**
      * {@inheritDoc}
+     *
+     * @return ArgumentList
+     *
+     * @psalm-mutation-free
      */
     public function getArguments(): ArrayObject
     {
@@ -78,6 +101,8 @@ final class ReflectiveMethodInvocation implements MethodInvocation
 
     /**
      * {@inheritDoc}
+     *
+     * @return NamedArguments
      */
     public function getNamedArguments(): ArrayObject
     {
@@ -109,6 +134,8 @@ final class ReflectiveMethodInvocation implements MethodInvocation
 
     /**
      * {@inheritDoc}
+     *
+     * @psalm-external-mutation-free
      */
     public function getThis()
     {

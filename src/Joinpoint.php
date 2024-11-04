@@ -21,6 +21,7 @@ namespace Ray\Aop;
  * the static joinpoint.
  *
  * @see Interceptor
+ * @template T of object
  */
 interface Joinpoint
 {
@@ -41,7 +42,9 @@ interface Joinpoint
      *
      * <p>For instance, the target object for an invocation.
      *
-     * @return object (can be null if the accessible object is static)
+     * @return T (can be null if the accessible object is static)
+     *
+     * @psalm-mutation-free
      */
     public function getThis();
 }

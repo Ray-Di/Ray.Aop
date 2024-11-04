@@ -30,6 +30,8 @@ class ReflectionClass extends \ReflectionClass implements Reader
 
     /**
      * {@inheritDoc}
+     *
+     * @psalm-external-mutation-free
      */
     public function getAnnotation(string $annotationName)
     {

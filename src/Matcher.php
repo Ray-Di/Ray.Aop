@@ -13,6 +13,8 @@ class Matcher implements MatcherInterface
 {
     /**
      * {@inheritDoc}
+     *
+     * @psalm-mutation-free
      */
     public function any()
     {
@@ -45,6 +47,8 @@ class Matcher implements MatcherInterface
 
     /**
      * {@inheritDoc}
+     *
+     * @psalm-mutation-free
      */
     public function startsWith($prefix): AbstractMatcher
     {

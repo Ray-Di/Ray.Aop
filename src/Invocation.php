@@ -12,6 +12,8 @@ use ArrayObject;
  * An invocation is a joinpoint and can be intercepted by an interceptor.
  *
  * @see http://aopalliance.sourceforge.net/doc/org/aopalliance/intercept/Invocation.html
+ * @template T of object
+ * @extends Joinpoint<T>
  */
 interface Invocation extends Joinpoint
 {

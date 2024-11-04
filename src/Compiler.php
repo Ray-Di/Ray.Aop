@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Ray\Aop;
 
-use Doctrine\Common\Annotations\AnnotationException;
 use ParseError;
 use Ray\Aop\Exception\CompilationFailedException;
 use Ray\Aop\Exception\NotWritableException;
@@ -22,12 +21,24 @@ use function str_replace;
 
 use const PHP_VERSION_ID;
 
+/**
+ *  Compiler
+ *
+ *  A class responsible for compiling and creating new instances of
+ *  AOP (Aspect-Oriented Programming) classes. Handles the binding of
+ *  methods and ensures the classes are writable.
+ *
+ * @psalm-import-type ConstructorArguments from CompilerInterface
+ */
 final class Compiler implements CompilerInterface
 {
-    /** @var string */
+    /**
+     * @var non-empty-string
+     * @readonly
+     */
     public $classDir;
 
-    /** @throws AnnotationException */
+    /** @param  non-empty-string $classDir */
     public function __construct(string $classDir)
     {
         if (! is_writable($classDir)) {
@@ -40,13 +51,20 @@ final class Compiler implements CompilerInterface
     /**
      * {@inheritDoc}
      *
+     * @param class-string<T>      $class
+     * @param ConstructorArguments $args
+     *
+     * @return T
+     *
      * @template T of object
+     * @psalm-immutable
      */
-    public function newInstance(string $class, array $args, BindInterface $bind)
+    public function newInstance(string $class, array $args, BindInterface $bind): object
     {
         $compiledClass = $this->compile($class, $bind);
         assert(class_exists($compiledClass));
         $instance = (new ReflectionClass($compiledClass))->newInstanceArgs($args);
+        assert($instance instanceof $class);
         if (isset($instance->bindings)) {
             $instance->bindings = $bind->getBindings();
         }
@@ -58,16 +76,24 @@ final class Compiler implements CompilerInterface
 
     /**
      * {@inheritDoc}
+     *
+     * @param class-string<T> $class
+     *
+     * @return class-string<T>
+     *
+     * @template T of object
+     * @sideEffect Genaerates a new class file
      */
     public function compile(string $class, BindInterface $bind): string
     {
         if ($this->hasNoBinding($class, $bind)) {
+            /** @var class-string<T> $class */
             return $class;
         }
 
         $className = new AopPostfixClassName($class, (string) $bind, $this->classDir);
         if (class_exists($className->fqn, false)) {
-            return $className->fqn;
+            goto return_fqn;
         }
 
         try {
@@ -80,7 +106,11 @@ final class Compiler implements CompilerInterface
             // @codeCoverageIgnoreEnd
         }
 
-        return $className->fqn;
+        return_fqn:
+        $fqn = $className->fqn; // phpcs:ignore SlevomatCodingStandard.Variables.UselessVariable.UselessVariable
+        /** @var class-string<T> $fqn */
+
+        return $fqn;
     }
 
     /** @param class-string $class */

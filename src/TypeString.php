@@ -15,16 +15,30 @@ use function class_exists;
 use function implode;
 use function sprintf;
 
+/**
+ * TypeString converts ReflectionType instances to their corresponding string representations.
+ */
 final class TypeString
 {
-    /** @var string */
+    /**
+     * @var string
+     * @readonly
+     */
     private $nullableStr;
+
+    /**
+     * @var bool
+     * @readonly
+     */
+    private $hasUnionType;
 
     public function __construct(string $nullableStr)
     {
         $this->nullableStr = $nullableStr;
+        $this->hasUnionType = class_exists('ReflectionUnionType');
     }
 
+    /** @psalm-external-mutation-free */
     public function __invoke(?ReflectionType $type): string
     {
         if (! $type) {
@@ -32,7 +46,7 @@ final class TypeString
         }
 
         // PHP 8.0+
-        if (class_exists('ReflectionUnionType') && $type instanceof ReflectionUnionType) {
+        if ($this->hasUnionType && $type instanceof ReflectionUnionType) {
             return $this->getUnionType($type);
         }
 
@@ -51,6 +65,7 @@ final class TypeString
         return $this->intersectionTypeToString($type);
     }
 
+    /** @psalm-pure */
     private function intersectionTypeToString(ReflectionIntersectionType $intersectionType): string
     {
         $types = $intersectionType->getTypes();
@@ -62,9 +77,11 @@ final class TypeString
         return implode(' & ', $typeStrings);
     }
 
+    /** @psalm-pure */
     public function getUnionType(ReflectionUnionType $type): string
     {
         $types = array_map(static function ($t) {
+            /** @psalm-suppress DocblockTypeContradiction */
             if ($t instanceof ReflectionIntersectionType) {
                 $types = $t->getTypes();
                 /** @var array<ReflectionNamedType>  $types */
@@ -81,6 +98,10 @@ final class TypeString
         return implode('|', $types);
     }
 
+    /**
+     * @psalm-external-mutation-free
+     * @psalm-pure
+     */
     private static function getFqnType(ReflectionNamedType $namedType): string
     {
         $type = $namedType->getName();

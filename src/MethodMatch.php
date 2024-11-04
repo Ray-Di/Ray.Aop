@@ -10,6 +10,14 @@ use ReflectionMethod;
 use function array_key_exists;
 use function get_class;
 
+/**
+ * @psalm-import-type MethodInterceptors from Aspect
+ * @psalm-import-type MethodBindings from Aspect
+ * @psalm-import-type ClassBindings from Aspect
+ * @psalm-import-type MatcherConfig from Aspect
+ * @psalm-import-type Arguments from Aspect
+ * @psalm-import-type Pointcuts from Bind
+ */
 final class MethodMatch
 {
     /** @var BindInterface */
@@ -22,7 +30,7 @@ final class MethodMatch
 
     /**
      * @param ReflectionClass<object> $class
-     * @param Pointcut[]              $pointcuts
+     * @param Pointcuts               $pointcuts
      */
     public function __invoke(ReflectionClass $class, \Ray\Aop\ReflectionMethod $method, array $pointcuts): void
     {

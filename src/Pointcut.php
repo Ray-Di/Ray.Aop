@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ray\Aop;
 
+/** @psalm-immutable */
 class Pointcut
 {
     /** @var AbstractMatcher */

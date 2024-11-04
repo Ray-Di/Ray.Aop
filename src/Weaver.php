@@ -12,18 +12,31 @@ use function str_replace;
 
 final class Weaver
 {
-    /** @var BindInterface */
+    /**
+     * @var BindInterface
+     * @readonly
+     */
     private $bind;
 
-    /** @var string */
+    /**
+     * @var string
+     * @readonly
+     */
     private $bindName;
 
-    /** @var string */
+    /**
+     * @var string
+     * @readonly
+     */
     private $classDir;
 
-    /** @var Compiler */
+    /**
+     * @var Compiler
+     * @readonly
+     */
     private $compiler;
 
+    /** @param non-empty-string $classDir */
     public function __construct(BindInterface $bind, string $classDir)
     {
         $this->bind = $bind;

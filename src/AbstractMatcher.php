@@ -9,11 +9,20 @@ use ReflectionMethod;
 
 use function func_get_args;
 
+/**
+ * Abstract matcher base class
+ *
+ * @psalm-type MatcherArguments = array<array-key, mixed>
+ * @psalm-type Arguments = array<array-key, mixed>
+ */
 abstract class AbstractMatcher
 {
-    /** @var mixed[] */
+    /** @var MatcherArguments */
     protected $arguments = [];
 
+    /**
+     * Constructor
+     */
     public function __construct()
     {
         $this->arguments = func_get_args();
@@ -22,8 +31,8 @@ abstract class AbstractMatcher
     /**
      * Match class condition
      *
-     * @param ReflectionClass<object> $class
-     * @param mixed[]                 $arguments
+     * @param ReflectionClass<object> $class     Target class
+     * @param MatcherArguments        $arguments Matching condition arguments
      *
      * @return bool
      */
@@ -32,7 +41,8 @@ abstract class AbstractMatcher
     /**
      * Match method condition
      *
-     * @param mixed[] $arguments
+     * @param ReflectionMethod $method    Target method
+     * @param MatcherArguments $arguments Matching condition arguments
      *
      * @return bool
      */
@@ -41,9 +51,9 @@ abstract class AbstractMatcher
     /**
      * Return matching condition arguments
      *
-     * @return mixed[]
+     * @return Arguments
      */
-    public function getArguments()
+    public function getArguments(): array
     {
         return $this->arguments;
     }

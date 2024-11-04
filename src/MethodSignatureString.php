@@ -9,6 +9,7 @@ use ReflectionMethod;
 use ReflectionParameter;
 use UnitEnum;
 
+use function array_merge;
 use function implode;
 use function is_numeric;
 use function is_string;
@@ -36,17 +37,22 @@ final class MethodSignatureString
         $this->typeString = new TypeString($nullableStr);
     }
 
+    /** @psalm-external-mutation-free  */
     public function get(ReflectionMethod $method): string
     {
         $signatureParts = $this->getDocComment($method);
         $this->addAttributes($method, $signatureParts);
-        $this->addAccessModifiers($method, $signatureParts);
-        $this->addMethodSignature($method, $signatureParts);
+        $modiferedSignatureParts = $this->addAccessModifiers($method, $signatureParts);
+        $methodSignatureParts = $this->addMethodSignature($method, $modiferedSignatureParts);
 
-        return implode(' ', $signatureParts);
+        return implode(' ', $methodSignatureParts);
     }
 
-    /** @return array<string> */
+    /**
+     * @return array<string>
+     *
+     * @psalm-pure
+     */
     private function getDocComment(ReflectionMethod $method): array
     {
         $docComment = $method->getDocComment();
@@ -80,16 +86,26 @@ final class MethodSignatureString
         $signatureParts[] = self::INDENT;
     }
 
-    /** @param array<string> $signatureParts */
-    private function addAccessModifiers(ReflectionMethod $method, array &$signatureParts): void
+    /**
+     * @param array<string> $signatureParts
+     *
+     * @return array<string>
+     *
+     * @psalm-pure
+     */
+    private function addAccessModifiers(ReflectionMethod $method, array $signatureParts): array
     {
         $modifier = implode(' ', Reflection::getModifierNames($method->getModifiers()));
 
-        $signatureParts[] = $modifier;
+        return array_merge($signatureParts, [$modifier]);
     }
 
-    /** @param array<string> $signatureParts */
-    private function addMethodSignature(ReflectionMethod $method, array &$signatureParts): void
+    /**
+     * @param array<string> $signatureParts
+     *
+     * @return array<string>
+     */
+    private function addMethodSignature(ReflectionMethod $method, array $signatureParts): array
     {
         $params = [];
         foreach ($method->getParameters() as $param) {
@@ -101,11 +117,16 @@ final class MethodSignatureString
         $return = $rType ? ': ' . ($this->typeString)($rType) : '';
 
         $signatureParts[] = sprintf('function %s(%s)%s', $method->getName(), $parmsList, $return);
+
+        return $signatureParts;
     }
 
     /**
      * @param string|int $name
      * @param mixed      $value
+     *
+     * @psalm-external-mutation-free
+     * @psalm-pure
      */
     private function formatArg($name, $value): string
     {

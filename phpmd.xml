@@ -21,7 +21,7 @@
     <!--design-->
     <rule ref="rulesets/design.xml/EvalExpression"/>
     <rule ref="rulesets/design.xml/ExitExpression"/>
-    <rule ref="rulesets/design.xml/GotoStatement" />
+<!--    <rule ref="rulesets/design.xml/GotoStatement" />-->
     <rule ref="rulesets/design.xml/NumberOfChildren"/>
     <rule ref="rulesets/design.xml/DepthOfInheritance"/>
      <rule ref="rulesets/design.xml/CouplingBetweenObjects" />

@@ -5,7 +5,7 @@
     xmlns="https://getpsalm.org/schema/config"
     xsi:schemaLocation="https://getpsalm.org/schema/config https://psalm.dev/schema/config"
     findUnusedBaselineEntry="true"
-    phpVersion="8.2"
+    phpVersion="8.3"
     findUnusedCode = "false"
 >
     <projectFiles>

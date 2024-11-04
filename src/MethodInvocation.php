@@ -11,6 +11,8 @@ namespace Ray\Aop;
  * <p>A method invocation is a joinpoint and can be intercepted by a method
  * interceptor.
  *
+ * @template T of object
+ * @extends Invocation<T>
  * @see MethodInterceptor
  * http://aopalliance.sourceforge.net/doc/org/aopalliance/intercept/MethodInvocation.html
  */

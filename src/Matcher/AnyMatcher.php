@@ -56,11 +56,13 @@ final class AnyMatcher extends AbstractMatcher
         }
     }
 
+    /** @psalm-pure */
     private function isMagicMethod(string $name): bool
     {
         return strpos($name, '__') === 0;
     }
 
+    /** @psalm-external-mutation-free */
     private function isBuiltinMethod(string $name): bool
     {
         return in_array($name, self::$builtinMethods, true);
