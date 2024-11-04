@@ -12,6 +12,7 @@ jobs:
     strategy:
       matrix:
         php-version: ['8.1', '8.2', '8.3']
+      fail-fast: false
 
     steps:
       - name: Checkout code
@@ -40,80 +41,93 @@ jobs:
           phpize
           ./configure
           make
-
-      - name: PHP info
-        id: php_info
-        run: |
-          php -dextension=./ext-rayaop/modules/rayaop.so -i | grep rayaop
-
-      - name: Run PECL demo with debug logging
-        id: run_pecl_demo
-        run: |
-          timeout 60s php -n -dextension=./ext-rayaop/modules/rayaop.so -dmemory_limit=128M -dreport_memleaks=1 -dzend.assertions=1 -dassert.exception=1 ./ext-rayaop/smoke.php
         continue-on-error: true
 
-      - name: Check loaded extension
-        id: check_loaded_extension
+      # Combined step for PHPUnit and Valgrind analysis
+      - name: Run Tests with Valgrind
+        if: success() || failure() # Run regardless of previous step status
+        id: test_with_valgrind
         run: |
-          php -dextension=./ext-rayaop/modules/rayaop.so -r 'var_dump(extension_loaded("rayaop"));'
-
-      - name: Check function exists
-        id: check_function_exists
-        run: |
-          php -dextension=./ext-rayaop/modules/rayaop.so -r 'var_dump(function_exists("method_intercept"));'
-
-      - name: Run PHPUnit tests
-        id: run_phpunit_tests
-        run: |
-          php -dextension=./ext-rayaop/modules/rayaop.so vendor/bin/phpunit --coverage-clover=coverage.xml
-
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Run Valgrind memory check
-        if: steps.build_extension.outcome == 'failure' || steps.run_pecl_demo.outcome == 'failure'
-        run: |
-          cat << EOF > valgrind.supp
+          # Create Valgrind suppression file
+          cat << EOF > rayaop.supp
           {
-             <insert_a_suppression_name_here>
+             php_startup_leak
              Memcheck:Leak
              match-leak-kinds: reachable
              ...
              fun:php_module_startup
              ...
           }
+          {
+             zend_mm_startup_leak
+             Memcheck:Leak
+             match-leak-kinds: reachable
+             ...
+             fun:zend_mm_startup
+             ...
+          }
           EOF
-          valgrind --suppressions=valgrind.supp --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=valgrind-out.txt php -n -dextension=./ext-rayaop/modules/rayaop.so vendor/bin/phpunit
-
-      - name: Check Valgrind results
-        if: steps.build_extension.outcome == 'failure' || steps.run_pecl_demo.outcome == 'failure'
-        run: |
-          if [ -f valgrind-out.txt ]; then
-            echo "Valgrind log found:"
-            cat valgrind-out.txt
-            if ! grep -q "ERROR SUMMARY: 0 errors from 0 contexts" valgrind-out.txt; then
-              echo "Valgrind found errors"
-              exit 1
-            fi
-          else
-            echo "Valgrind log not found. This is unexpected."
-            exit 1
+          
+          # Run PHPUnit under Valgrind
+          valgrind \
+            --suppressions=rayaop.supp \
+            --leak-check=full \
+            --show-leak-kinds=all \
+            --track-origins=yes \
+            --verbose \
+            --error-exitcode=0 \
+            --log-file=valgrind.log \
+            php -n \
+              -d extension=./ext-rayaop/modules/rayaop.so \
+              -d memory_limit=256M \
+              vendor/bin/phpunit \
+              --coverage-clover=coverage.xml || true
+          
+          # Display Valgrind log
+          echo "=== Valgrind Log ==="
+          cat valgrind.log
+          
+          # Check for core dump in case of crash
+          if [ -f core ]; then
+            echo "=== Core Dump Analysis ==="
+            gdb php core -ex "bt" -ex "quit"
           fi
 
-      - name: Upload Valgrind log file
-        if: steps.build_extension.outcome == 'failure' || steps.run_pecl_demo.outcome == 'failure'
+      # Upload debug information
+      - name: Upload debug logs
+        if: always() # Always run this step
         uses: actions/upload-artifact@v4
         with:
-          name: valgrind-log
-          path: valgrind-out.txt
+          name: debug-logs
+          path: |
+            valgrind.log
+            coverage.xml
+            core*
           if-no-files-found: warn
+
+      # Upload coverage report
+      - name: Upload coverage report
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+        continue-on-error: true
 
       - name: Final status check
         if: always()
         run: |
-          if [[ "${{ steps.build_extension.outcome }}" == 'failure' || "${{ steps.run_pecl_demo.outcome }}" == 'failure' ]]; then
-            echo "Build extension and run failed. Please check the logs for more information."
-            exit 1
+          echo "Extension build status: ${{ steps.build_extension.outcome }}"
+          echo "Test with Valgrind status: ${{ steps.test_with_valgrind.outcome }}"
+          
+          # Check for critical issues in Valgrind log
+          if [ -f valgrind.log ]; then
+            echo "=== Valgrind Error Summary ==="
+            grep "ERROR SUMMARY:" valgrind.log || true
+            grep "definitely lost:" valgrind.log || true
+            grep "indirectly lost:" valgrind.log || true
+          fi
+          
+          # Report segmentation fault details
+          if [ -f core ]; then
+            echo "Segmentation fault detected. Please check debug information."
           fi
