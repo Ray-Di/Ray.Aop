@@ -51,7 +51,7 @@ final class MethodSignatureString
     /**
      * @return array<string>
      *
-     * @psalm-external-mutation-free
+     * @psalm-pure
      */
     private function getDocComment(ReflectionMethod $method): array
     {
@@ -92,6 +92,8 @@ final class MethodSignatureString
      * @return array<string>
      *
      * @psalm-mutation-free
+     *
+     * @psalm-pure
      */
     private function addAccessModifiers(ReflectionMethod $method, array $signatureParts): array
     {
@@ -126,6 +128,8 @@ final class MethodSignatureString
      * @param mixed      $value
      *
      * @psalm-external-mutation-free
+     *
+     * @psalm-pure
      */
     private function formatArg($name, $value): string
     {

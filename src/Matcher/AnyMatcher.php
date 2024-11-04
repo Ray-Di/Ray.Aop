@@ -56,6 +56,7 @@ final class AnyMatcher extends AbstractMatcher
         }
     }
 
+    /** @psalm-pure */
     private function isMagicMethod(string $name): bool
     {
         return strpos($name, '__') === 0;

@@ -11,6 +11,8 @@ use function filemtime;
 
 /**
  * Fully qualified name including postfix
+ *
+ * @psalm-immutable
  */
 final class AopPostfixClassName
 {

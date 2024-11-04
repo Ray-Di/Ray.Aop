@@ -65,7 +65,7 @@ final class TypeString
         return $this->intersectionTypeToString($type);
     }
 
-    /** @psalm-external-mutation-free */
+    /** @psalm-pure */
     private function intersectionTypeToString(ReflectionIntersectionType $intersectionType): string
     {
         $types = $intersectionType->getTypes();
@@ -97,7 +97,10 @@ final class TypeString
         return implode('|', $types);
     }
 
-    /** @psalm-external-mutation-free */
+    /**
+     * @psalm-external-mutation-free
+     * @psalm-pure
+     */
     private static function getFqnType(ReflectionNamedType $namedType): string
     {
         $type = $namedType->getName();
