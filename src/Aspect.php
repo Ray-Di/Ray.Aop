@@ -229,51 +229,6 @@ final class Aspect
      */
     public function newInstance(string $className, array $args = []): object
     {
-        $reflection = new ReflectionClass($className);
-
-        if ($reflection->isFinal() && extension_loaded('rayaop')) {
-            return $this->newInstanceWithPecl($className, $args); // @codeCoverageIgnore
-        }
-
-        return $this->newInstanceWithPhp($className, $args);
-    }
-
-    /**
-     * Create instance using PECL extension
-     *
-     * @param class-string<T> $className
-     * @param Arguments       $args
-     *
-     * @return T
-     *
-     * @template T of object
-     * @codeCoverageIgnore
-     */
-    private function newInstanceWithPecl(string $className, array $args): object
-    {
-        /** @psalm-suppress MixedMethodCall */
-        $instance = new $className(...$args);
-        $this->processClass($className);
-        $this->applyInterceptors();
-
-        /** @var T $instance */
-        return $instance;
-    }
-
-    /**
-     * Create instance using PHP-based implementation
-     *
-     * @param class-string<T> $className
-     * @param list<mixed>     $args
-     *
-     * @return T
-     *
-     * @throws RuntimeException When temporary directory is not set.
-     *
-     * @template T of object
-     */
-    private function newInstanceWithPhp(string $className, array $args): object
-    {
         $bind = $this->createBind($className);
         $weaver = new Weaver($bind, $this->tmpDir);
 
