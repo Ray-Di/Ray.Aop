@@ -13,6 +13,7 @@ use function is_array;
 use function is_string;
 use function token_get_all;
 
+use function var_dump;
 use const T_ABSTRACT;
 use const T_CLASS;
 use const T_COMMENT;
@@ -42,6 +43,7 @@ final class ClassName
 
         /** @var Tokens $tokens */
         $tokens = token_get_all(file_get_contents($filePath));
+        var_dump($tokens);
         $count = count($tokens);
         $position = 0;
         $namespace = '';
@@ -65,7 +67,10 @@ final class ClassName
                 case T_CLASS:
                     $className = self::parseClassName($tokens, (int) $position + 1, $count);
                     if ($className !== null) {
-                        return $namespace !== '' ? $namespace . '\\' . $className : $className;
+                        $fqn =  $namespace !== '' ? $namespace . '\\' . $className : $className;
+                        echo "FQN: $fqn" . PHP_EOL;
+
+                        return $fqn;
                     }
             }
         }
