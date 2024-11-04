@@ -59,6 +59,7 @@ final class ClassList implements IteratorAggregate
         // Extract class name
         if (preg_match(self::CLASS_NAME_PATTERN, (string) $content, $matches)) {
             $className = $matches[1];
+
             return $namespace !== '' ? $namespace . '\\' . $className : $className;
         }
 
