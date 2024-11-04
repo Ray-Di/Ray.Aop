@@ -32,11 +32,11 @@ final class ClassList implements IteratorAggregate
     /**
      * Extracts the Fully Qualified Class Name (FQCN) from a PHP file.
      */
-    public static function from(string $file): ?string
+    public static function getClassName(string $file): ?string
     {
         $content = file_get_contents($file);
         if ($content === false) {
-            return null;
+            return null; // @codeCoverageIgnore
         }
 
         if (strpos($content, '<?php') !== false) {
@@ -85,7 +85,7 @@ final class ClassList implements IteratorAggregate
 
         /** @var SplFileInfo $file */
         foreach ($files as $file) {
-            $className = self::from($file->getPathname());
+            $className = self::getClassName($file->getPathname());
             if ($className === null || ! class_exists($className)) {
                 continue;
             }
