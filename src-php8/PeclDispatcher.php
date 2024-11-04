@@ -6,9 +6,13 @@ namespace Ray\Aop;
 
 use Ray\Aop\Exception\LogicException;
 
+/**
+ * @psalm-import-type ClassBoundInterceptors from AspectPecl
+ * @psalm-type Interceptors = array<MethodInterceptor>
+ */
 class PeclDispatcher implements MethodInterceptorInterface
 {
-    /** @param array<string, array<string, array<MethodInterceptor>>> $interceptors */
+    /** @param ClassBoundInterceptors $interceptors */
     public function __construct(private array $interceptors)
     {
     }
@@ -28,7 +32,7 @@ class PeclDispatcher implements MethodInterceptorInterface
             throw new LogicException('Interceptors not found');
         }
 
-        /** @var array<MethodInterceptor> $interceptors */
+        /** @var Interceptors $interceptors */
         $interceptors = $this->interceptors[$class][$method];
 
         $invocation = new ReflectiveMethodInvocation($object, $method, $params, $interceptors);
