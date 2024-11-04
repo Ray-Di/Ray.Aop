@@ -20,6 +20,7 @@ use const T_DOC_COMMENT;
 use const T_FINAL;
 use const T_NAMESPACE;
 use const T_STRING;
+use const T_NS_SEPARATOR;
 use const T_WHITESPACE;
 
 /**
@@ -30,6 +31,7 @@ use const T_WHITESPACE;
  */
 final class ClassName
 {
+    /** T_NAME_QUALIFIED is available in PHP >= 8.0 */
     private const T_NAME_QUALIFIED = 316;
 
     public static function from(string $filePath): ?string
@@ -39,7 +41,7 @@ final class ClassName
         }
 
         /** @var Tokens $tokens */
-        $tokens = token_get_all(file_get_contents($filePath)); // @phpstan-ignore-line
+        $tokens = token_get_all(file_get_contents($filePath));
         $count = count($tokens);
         $position = 0;
         $namespace = '';
@@ -55,14 +57,14 @@ final class ClassName
 
             switch ($token[0]) {
                 case T_NAMESPACE:
-                    /** @var ParserResult $namespaceResult */
-                    $namespaceResult = self::parseNamespaceUnified($tokens, $position + 1, $count);
-                    [$namespace, $position] = $namespaceResult;
+                    $namespaceResult = self::parseNamespaceDeep($tokens, (int) $position + 1, $count);
+                    /** @var string $namespace */
+                    $namespace = $namespaceResult[0];
+                    $position = $namespaceResult[1];
                     continue 2;
                 case T_CLASS:
-                    $className = self::parseClassName($tokens, $position + 1, $count);
+                    $className = self::parseClassName($tokens, (int) $position + 1, $count);
                     if ($className !== null) {
-                        /** @var string $namespace */
                         return $namespace !== '' ? $namespace . '\\' . $className : $className;
                     }
             }
@@ -75,21 +77,13 @@ final class ClassName
      * @param Tokens $tokens
      * @return ParserResult
      */
-    private static function parseNamespaceUnified(array $tokens, int $position, int $count): array
+    private static function parseNamespaceDeep(array $tokens, int $position, int $count): array
     {
         $position = self::skipWhitespace($tokens, $position, $count);
         if (! is_array($tokens[$position])) {
             return ['', $position];
         }
 
-        // PHP 8.0+ での T_NAME_QUALIFIED トークンのチェック
-        if ($tokens[$position][0] === self::T_NAME_QUALIFIED) {
-            /** @var TokenValue $token */
-            $token = $tokens[$position];
-            return [$token[1], $position + 1];
-        }
-
-        // 従来の方式でのnamespace解析
         /** @var list<string> $namespaceParts */
         $namespaceParts = [];
         $continuing = true;
@@ -97,7 +91,8 @@ final class ClassName
         while ($position < $count && $continuing) {
             $token = $tokens[$position];
 
-            if (! is_array($token)) {
+            // 文字列トークンの処理
+            if (is_string($token)) {
                 if ($token === ';' || $token === '{') {
                     $continuing = false;
                 } elseif ($token === '\\') {
@@ -109,23 +104,33 @@ final class ClassName
 
             /** @var TokenValue $token */
             switch ($token[0]) {
+                case self::T_NAME_QUALIFIED:
+                    // PHP 8.0+ での完全修飾名の直接取得
+                    return [$token[1], $position + 1];
                 case T_STRING:
+                    // 名前空間の部分を収集
                     $namespaceParts[] = $token[1];
+                    break;
+                case T_NS_SEPARATOR:
+                    // 名前空間セパレータの処理
+                    $namespaceParts[] = '\\';
                     break;
                 case T_WHITESPACE:
                     // スペースは無視
                     break;
                 default:
-                    if ($token[0] === self::T_NAME_QUALIFIED) {
-                        return [$token[1], $position + 1];
-                    }
+                    // その他のトークンは無視
                     break;
             }
 
             $position++;
         }
 
-        $namespace = trim(implode('', $namespaceParts), '\\');
+        // 名前空間文字列の構築
+        $namespace = implode('', $namespaceParts);
+        // 先頭と末尾の余分な \ を除去
+        $namespace = trim($namespace, '\\');
+
         return [$namespace, $position];
     }
 
