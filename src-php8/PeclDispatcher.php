@@ -7,6 +7,8 @@ namespace Ray\Aop;
 use Ray\Aop\Exception\LogicException;
 
 /**
+ * Dispatch pecl-based method interceptor
+ *
  * @psalm-import-type ClassBoundInterceptors from AspectPecl
  * @psalm-type Interceptors = array<MethodInterceptor>
  */
