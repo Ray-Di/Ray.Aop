@@ -44,7 +44,9 @@ final class ClassList implements IteratorAggregate
             $token = $tokens[$position];
             if (! is_array($token)) {
                 if ($collectingNamespace && $token === ';') {
-                    $namespace = implode('\\', array_filter($namespaceBuffer, static fn ($part) => $part !== ''));
+                    $namespace = implode('\\', array_filter($namespaceBuffer, static function ($part) {
+                        return $part !== '';
+                    }));
                     $collectingNamespace = false;
                 }
 
