@@ -17,8 +17,6 @@ use const T_CLASS;
 use const T_COMMENT;
 use const T_DOC_COMMENT;
 use const T_FINAL;
-use const T_NAME_FULLY_QUALIFIED;
-use const T_NAME_QUALIFIED;
 use const T_NAMESPACE;
 use const T_STRING;
 use const T_WHITESPACE;
@@ -30,19 +28,30 @@ use const T_WHITESPACE;
  */
 final class ClassName
 {
+    private const T_NAME_QUALIFIED = 316;
+
+    /**
+     * Extract fully qualified class name from file
+     *
+     * @psalm-return string|null
+     */
     public static function from(string $filePath): ?string
     {
         if (! file_exists($filePath)) {
             return null;
         }
 
+        /** @var string */
         $namespace = '';
+        /** @var string|null */
         $className = null;
+        /** @var array<int, array{0: int, 1: string, 2: int}|string> $tokens */
         $tokens = token_get_all(file_get_contents($filePath)); // @phpstan-ignore-line
         $count = count($tokens);
 
         $i = 0;
         while ($i < $count) {
+            /** @var array{0: int, 1: string, 2: int}|string $token */
             $token = $tokens[$i];
 
             if (is_array($token) && $token[0] === T_NAMESPACE) {
@@ -51,48 +60,61 @@ final class ClassName
                     $i++;
                 }
 
-                $namespaceParts = [];
-                while ($i < $count) {
-                    $token = $tokens[$i];
+                /** @var array{0: int, 1: string, 2: int}|string $token */
+                $token = $tokens[$i];
+                if (is_array($token)) {
+                    if ($token[0] === self::T_NAME_QUALIFIED) {
+                        /** @var string */
+                        $namespace = $token[1];
+                    } elseif ($token[0] === T_STRING) {
+                        /** @var list<string> $namespaceParts */
+                        $namespaceParts = [];
+                        while ($i < $count) {
+                            /** @var array{0: int, 1: string, 2: int}|string $token */
+                            $token = $tokens[$i];
+                            if (is_array($token) && $token[0] === T_STRING) {
+                                $namespaceParts[] = $token[1];
+                                $i++;
+                                if ($i < $count && $tokens[$i] === '\\') {
+                                    $namespaceParts[] = '\\';
+                                    $i++;
+                                }
 
-                    if (is_array($token) && in_array($token[0], [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED])) {
-                        $namespaceParts[] = $token[1];
-                        $i++;
-                        continue;
+                                continue;
+                            }
+
+                            if ($token === ';' || $token === '{') {
+                                break;
+                            }
+
+                            $i++;
+                        }
+
+                        /** @var string */
+                        $namespace = implode('', $namespaceParts);
                     }
-
-                    if ($token === ';' || $token === '{') {
-                        $i++;
-                        break;
-                    }
-
-                    break;
                 }
 
-                $namespace = implode('', $namespaceParts);
                 continue;
             }
 
-            // クラス修飾子をスキップ（T_FINAL、T_ABSTRACT）
-            if (is_array($token) && in_array($token[0], [T_ABSTRACT, T_FINAL])) {
+            if (is_array($token) && in_array($token[0], [T_ABSTRACT, T_FINAL], true)) {
                 $i++;
                 continue;
             }
 
-            // クラス名の取得
             if (is_array($token) && $token[0] === T_CLASS) {
-                // ホワイトスペースとコメントをスキップ
                 $i++;
                 while (
                     $i < $count &&
                     is_array($tokens[$i]) &&
-                    in_array($tokens[$i][0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT])
+                    in_array($tokens[$i][0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)
                 ) {
                     $i++;
                 }
 
-                // クラス名を取得
-                if ($i < $count && is_array($tokens[$i]) && $tokens[$i][0] === T_STRING) {
+                if ($i < $count && is_array($tokens[$i])) {
+                    /** @var string */
                     $className = $tokens[$i][1];
                     break;
                 }
@@ -101,10 +123,11 @@ final class ClassName
             $i++;
         }
 
-        if ($className !== null) {
-            return $namespace ? $namespace . '\\' . $className : $className;
+        if ($className === null) {
+            return null;
         }
 
-        return null;
+        /** @var string */
+        return $namespace !== '' ? $namespace . '\\' . $className : $className;
     }
 }
