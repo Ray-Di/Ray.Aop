@@ -6,6 +6,7 @@ namespace Ray\Aop;
 
 use PHPUnit\Framework\TestCase;
 use Ray\Aop\Annotation\FakeClassMarker;
+use Ray\Aop\Annotation\FakeMarker;
 use Ray\Aop\Aspect\Fake\src\FakeMyClass;
 use Ray\Aop\Matcher\AnyMatcher;
 use Ray\Aop\Matcher\StartsWithMatcher;
@@ -51,7 +52,6 @@ class AspectTest extends TestCase
     /**
      * @requires extension rayaop
      * @requires PHP 8.1
-     * @depends testNewInstance
      *
      * Don't use runInSeparateProcess. PECL AOP extension is not loaded in the separate process.
      */
@@ -64,9 +64,22 @@ class AspectTest extends TestCase
         );
         $this->aspect->weave(__DIR__ . '/Fake/src');
         // here we are testing the interception!
-        $myClass = new FakeMyClass();
+        $myClass = new FakePeclClass();
         $result = $myClass->myMethod();
-        $this->assertSame(get_class($myClass), FakeMyClass::class);
+        $this->assertSame(get_class($myClass), FakePeclClass::class);
+        // the original method is intercepted
+        $this->assertEquals('intercepted original', $result);
+    }
+
+    /**
+     * @requires extension rayaop
+     * @requires PHP 8.1
+     * @depends testWeave
+     */
+    public function testWeaveFinalClass(): void
+    {
+        $myClass = new FakeFinalClass();
+        $result = $myClass->myMethod();
         // the original method is intercepted
         $this->assertEquals('intercepted original', $result);
     }
@@ -80,6 +93,32 @@ class AspectTest extends TestCase
             [new FakeMyInterceptor()]
         );
 
+        $billing = $aspect->newInstance(FakeMyClass::class);
+        $this->assertInstanceOf(FakeMyClass::class, $billing);
+    }
+
+    public function testNotClassMatch(): void
+    {
+        $aspect = new Aspect();
+        $aspect->bind(
+            (new Matcher())->annotatedWith(FakeMarker::class), // not match
+            (new Matcher())->any(),
+            [new FakeMyInterceptor()]
+        );
+        $aspect->weave(__DIR__ . '/Fake/src');
+        $billing = $aspect->newInstance(FakeMyClass::class);
+        $this->assertInstanceOf(FakeMyClass::class, $billing);
+    }
+
+    public function testNotMethodMatch(): void
+    {
+        $aspect = new Aspect();
+        $aspect->bind(
+            (new Matcher())->any(),
+            (new Matcher())->annotatedWith(FakeMarker::class), // not match
+            [new FakeMyInterceptor()]
+        );
+        $aspect->weave(__DIR__ . '/Fake/src');
         $billing = $aspect->newInstance(FakeMyClass::class);
         $this->assertInstanceOf(FakeMyClass::class, $billing);
     }
