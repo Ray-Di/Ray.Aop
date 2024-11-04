@@ -15,9 +15,8 @@ use function count;
 use function file_get_contents;
 use function is_array;
 use function token_get_all;
-
-use function var_dump;
-use const TOKEN_PARSE;
+use function implode;
+use function array_filter;
 
 /** @implements IteratorAggregate<class-string> */
 final class ClassList implements IteratorAggregate
@@ -31,29 +30,35 @@ final class ClassList implements IteratorAggregate
         $count = count($tokens);
         $position = 0;
         $namespace = '';
+        $collectingNamespace = false;
+        $namespaceBuffer = [];
 
         while ($position < $count) {
             $token = $tokens[$position];
             if (! is_array($token)) {
+                if ($collectingNamespace && $token === ';') {
+                    $namespace = implode('\\', array_filter($namespaceBuffer, fn($part) => $part !== ''));
+                    $collectingNamespace = false;
+                }
                 $position++;
                 continue;
             }
 
             switch ($token[1]) {
                 case 'namespace':
-                    var_dump('=====');
-                    var_dump($tokens[$position + 2]);
-                    var_dump($tokens);
-                    $namespace = $tokens[$position + 2][1];
-                    $position += 2;
+                    $collectingNamespace = true;
+                    $namespaceBuffer = [];
+                    $position++;
                     continue 2;
                 case 'class':
                     $className = $tokens[$position + 2][1];
                     $fqcn = $namespace !== '' ? $namespace . '\\' . $className : $className;
-
                     return class_exists($fqcn) ? $fqcn : null;
+                default:
+                    if ($collectingNamespace && $token[0] === T_STRING || $token[0] === T_NS_SEPARATOR) {
+                        $namespaceBuffer[] = $token[1];
+                    }
             }
-
             $position++;
         }
 
