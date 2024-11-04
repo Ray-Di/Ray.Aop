@@ -26,6 +26,13 @@ use function method_intercept;
  */
 final class AspectPecl
 {
+    public function __construct()
+    {
+        if (! extension_loaded('rayaop')) {
+            throw new RuntimeException('Ray.Aop extension is not loaded. Cannot use weave() method.'); // @codeCoverageIgnore
+        }
+    }
+
     /**
      * Weave aspects into classes in the specified directory
      *

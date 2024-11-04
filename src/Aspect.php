@@ -8,7 +8,6 @@ use ReflectionClass;
 use ReflectionMethod;
 use RuntimeException;
 
-use function extension_loaded;
 use function sys_get_temp_dir;
 
 /**
@@ -82,10 +81,6 @@ final class Aspect
      */
     public function weave(string $classDir): void
     {
-        if (! extension_loaded('rayaop')) {
-            throw new RuntimeException('Ray.Aop extension is not loaded. Cannot use weave() method.'); // @codeCoverageIgnore
-        }
-
         (new AspectPecl())->weave($classDir, $this->matchers);
     }
 
