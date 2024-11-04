@@ -42,8 +42,8 @@ class AspectTest extends TestCase
             new StartsWithMatcher('my'),
             [new FakeMyInterceptor()]
         );
-        $myClass = $this->aspect->newInstance(FakeMyClass::class);
-        $this->assertNotSame(get_class($myClass), FakeMyClass::class);
+        $myClass = $this->aspect->newInstance(FakeNonFinalClass::class);
+        $this->assertNotSame(get_class($myClass), FakeNonFinalClass::class);
         $result = $myClass->myMethod();
         // the original method is intercepted
         $this->assertEquals('intercepted original', $result);
@@ -51,8 +51,8 @@ class AspectTest extends TestCase
 
     public function testNewInstanceWithNoBound(): void
     {
-        $insntance = $this->aspect->newInstance(FakeMyClass::class);
-        $this->assertInstanceOf(FakeMyClass::class, $insntance);
+        $insntance = $this->aspect->newInstance(FakeNonFinalClass::class);
+        $this->assertInstanceOf(FakeNonFinalClass::class, $insntance);
     }
 
     /**
@@ -99,8 +99,8 @@ class AspectTest extends TestCase
             [new FakeMyInterceptor()]
         );
 
-        $billing = $aspect->newInstance(FakeMyClass::class);
-        $this->assertInstanceOf(FakeMyClass::class, $billing);
+        $billing = $aspect->newInstance(FakeNonFinalClass::class);
+        $this->assertInstanceOf(FakeNonFinalClass::class, $billing);
     }
 
     /**
@@ -116,8 +116,8 @@ class AspectTest extends TestCase
             [new FakeMyInterceptor()]
         );
         $aspect->weave(__DIR__ . '/Fake');
-        $billing = $aspect->newInstance(FakeMyClass::class);
-        $this->assertInstanceOf(FakeMyClass::class, $billing);
+        $billing = $aspect->newInstance(FakeNonFinalClass::class);
+        $this->assertInstanceOf(FakeNonFinalClass::class, $billing);
     }
 
     /**
@@ -133,7 +133,7 @@ class AspectTest extends TestCase
             [new FakeMyInterceptor()]
         );
         $aspect->weave(__DIR__ . '/Fake/src');
-        $billing = $aspect->newInstance(FakeMyClass::class);
-        $this->assertInstanceOf(FakeMyClass::class, $billing);
+        $billing = $aspect->newInstance(FakeNonFinalClass::class);
+        $this->assertInstanceOf(FakeNonFinalClass::class, $billing);
     }
 }
