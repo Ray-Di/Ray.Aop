@@ -59,6 +59,10 @@ final class ClassName
                     /** @var string */
                     $namespace = $namespaceResult[0];
                     $position = $namespaceResult[1];
+                    var_dump("ns:$namespace");
+                    var_dump("namespaceResult:");
+                    var_dump($namespaceResult);
+
                     continue 2;
                 case T_CLASS:
                     $className = self::parseClassName($tokens, $position + 1, $count);
