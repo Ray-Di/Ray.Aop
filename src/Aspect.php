@@ -199,10 +199,6 @@ final class Aspect
      */
     private function applyInterceptors(): void
     {
-        if (! extension_loaded('rayaop')) {
-            throw new RuntimeException('Ray.Aop extension is not loaded');
-        }
-
         $dispatcher = new PeclDispatcher($this->bound);
 
         foreach ($this->bound as $className => $methods) {
