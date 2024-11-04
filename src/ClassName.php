@@ -12,6 +12,7 @@ use function in_array;
 use function is_array;
 use function token_get_all;
 
+use function var_dump;
 use const T_ABSTRACT;
 use const T_CLASS;
 use const T_COMMENT;
@@ -63,7 +64,10 @@ final class ClassName
                     $className = self::parseClassName($tokens, $position + 1, $count);
                     if ($className !== null) {
                         /** @var string $namespace */
-                        return $namespace !== '' ? $namespace . '\\' . $className : $className;
+                        $fqn =  $namespace !== '' ? $namespace . '\\' . $className : $className;
+                        echo "FQN: $fqn" . PHP_EOL;
+
+                        return $fqn;
                     }
             }
         }
