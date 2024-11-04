@@ -249,4 +249,28 @@ PHP;
         $result = ClassName::from($filePath);
         $this->assertSame('MyNamespace\\MyClass', $result);
     }
+
+    public function testClassWithDeclare(): void
+    {
+        $phpCode = <<<'PHP'
+<?php
+
+declare(strict_types=1);
+
+namespace Ray\Aop;
+
+final class FakeFinalClass
+{
+    public function myMethod(): string
+    {
+        return 'original';
+    }
+}
+PHP;
+        $filePath = $this->tempDir . '/ClassWithDeclare.php';
+        file_put_contents($filePath, $phpCode);
+
+        $result = ClassName::from($filePath);
+        $this->assertSame('Ray\\Aop\\FakeFinalClass', $result);
+    }
 }
