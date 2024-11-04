@@ -12,16 +12,10 @@ use RuntimeException;
 use SplFileInfo;
 
 use function array_keys;
-use function array_slice;
 use function assert;
-use function basename;
 use function class_exists;
-use function count;
-use function end;
 use function extension_loaded;
-use function get_declared_classes;
 use function method_intercept; // @phpstan-ignore-line
-use function strcasecmp;
 use function sys_get_temp_dir;
 
 /**
@@ -98,13 +92,11 @@ final class Aspect
      * @param string $classDir Target class directory
      *
      * @throws RuntimeException When Ray.Aop extension is not loaded.
-     *
-     * @codeCoverageIgnore
      */
     public function weave(string $classDir): void
     {
         if (! extension_loaded('rayaop')) {
-            throw new RuntimeException('Ray.Aop extension is not loaded. Cannot use weave() method.');
+            throw new RuntimeException('Ray.Aop extension is not loaded. Cannot use weave() method.'); // @codeCoverageIgnore
         }
 
         $this->scanDirectory($classDir);
@@ -113,8 +105,6 @@ final class Aspect
 
     /**
      * Scan directory and compile classes
-     *
-     * @codeCoverageIgnore
      */
     private function scanDirectory(string $classDir): void
     {
@@ -128,51 +118,25 @@ final class Aspect
                 continue;
             }
 
-            $className = $this->getClassNameFromFile($file->getPathname());
+            $className = ClassName::from($file->getPathname());
+
             if ($className === null) {
                 continue;
             }
 
+            assert(class_exists($className), $className);
             $this->processClass($className);
         }
-    }
-
-    /**
-     * Get class name from file
-     *
-     * @return class-string|null
-     *
-     * @codeCoverageIgnore
-     */
-    private function getClassNameFromFile(string $file): ?string
-    {
-        $declaredClasses = get_declared_classes();
-        $previousCount = count($declaredClasses);
-
-        /** @psalm-suppress UnresolvableInclude */
-        require_once $file;
-
-        $newClasses = array_slice(get_declared_classes(), $previousCount);
-
-        foreach ($newClasses as $class) {
-            if (strcasecmp(basename($file, '.php'), $class) === 0) {
-                return $class;
-            }
-        }
-
-        return $newClasses ? end($newClasses) : null;
     }
 
     /**
      * Process class for interception
      *
      * @param class-string $className
-     *
-     * @codeCoverageIgnore
      */
     private function processClass(string $className): void
     {
-        assert(class_exists($className));
+        assert(class_exists($className), $className);
         $reflection = new ReflectionClass($className);
 
         foreach ($this->matchers as $matcher) {
@@ -194,8 +158,6 @@ final class Aspect
 
     /**
      * Apply interceptors to bound methods
-     *
-     * @codeCoverageIgnore
      */
     private function applyInterceptors(): void
     {
