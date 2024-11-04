@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace Ray\Aop;
 
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use ReflectionClass;
 use ReflectionMethod;
 use RuntimeException;
-use SplFileInfo;
 
 use function array_keys;
 use function assert;

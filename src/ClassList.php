@@ -26,7 +26,7 @@ final class ClassList implements IteratorAggregate
      */
     public static function from(string $file): ?string
     {
-        $tokens = token_get_all(file_get_contents($file), TOKEN_PARSE);
+        $tokens = token_get_all((string) file_get_contents($file), TOKEN_PARSE);
         $count = count($tokens);
         $position = 0;
         $namespace = '';
@@ -79,6 +79,10 @@ final class ClassList implements IteratorAggregate
 
             $className = self::from($file->getPathname());
             if ($className === null) {
+                continue;
+            }
+
+            if (! class_exists($className)) {
                 continue;
             }
 
