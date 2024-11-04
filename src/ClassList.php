@@ -10,74 +10,50 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
-use function array_filter;
 use function class_exists;
-use function count;
 use function file_get_contents;
-use function implode;
-use function is_array;
-use function token_get_all;
-
-use const TOKEN_PARSE;
+use function preg_match;
+use function preg_replace;
+use function str_contains;
+use function str_replace;
+use function strstr;
+use function trim;
 
 /** @implements IteratorAggregate<class-string> */
 final class ClassList implements IteratorAggregate
 {
-    public const T_STRING1 = 313;
-    public const T_STRING2 = 316;
-    public const T_NS_SEPARATOR1 = 379;
-    public const T_NS_SEPARATOR2 = 382;
-
     /**
      * Return FQCN from PHP file
      */
     public static function from(string $file): ?string
     {
-        $tokens = token_get_all((string) file_get_contents($file), TOKEN_PARSE);
-        $count = count($tokens);
-        $position = 0;
+        $content = (string) file_get_contents($file);
+
+        // PHPタグの外のコンテンツを除去
+        if (str_contains($content, '<?php')) {
+            $content = strstr($content, '<?php');
+        }
+
+        $content = (string) $content;
+        // コメントを除去
+        $content = preg_replace('/\/\*.*?\*\//s', '', $content); // 複数行コメント
+        $content = preg_replace('/\/\/.*$/m', '', (string) $content);     // 単行コメント
+
+        // 文字列リテラルを除去
+        $content = preg_replace('/([\'"])((?:\\\1|.)*?)\1/s', '', (string) $content);
+
+        // namespace取得
         $namespace = '';
-        $collectingNamespace = false;
-        $namespaceBuffer = [];
+        if (preg_match('/namespace\s+([a-zA-Z0-9\\\\_ ]+?);/s', (string) $content, $matches)) {
+            $namespace = trim(str_replace(['\n', '\r', ' '], '', $matches[1]));
+        }
 
-        while ($position < $count) {
-            $token = $tokens[$position];
-            if (! is_array($token)) {
-                if ($collectingNamespace && $token === ';') {
-                    $namespace = implode('\\', array_filter($namespaceBuffer, static function ($part) {
-                        return $part !== '';
-                    }));
-                    $collectingNamespace = false;
-                }
+        // クラス名取得
+        if (preg_match('/class\s+([a-zA-Z0-9_]+)(?:\s+extends|\s+implements|\s*{)/s', (string) $content, $matches)) {
+            $className = $matches[1];
+            $fqcn = $namespace !== '' ? $namespace . '\\' . $className : $className;
 
-                $position++;
-                continue;
-            }
-
-            switch ($token[1]) {
-                case 'namespace':
-                    $collectingNamespace = true;
-                    $namespaceBuffer = [];
-                    $position++;
-                    continue 2;
-                case 'class':
-                    $className = $tokens[$position + 2][1];
-                    $fqcn = $namespace !== '' ? $namespace . '\\' . $className : $className;
-
-                    return class_exists($fqcn) ? $fqcn : null;
-
-                default:
-                    if (
-                        $collectingNamespace && $token[0] === self::T_STRING1
-                        || $collectingNamespace && $token[0] === self::T_STRING2
-                        || $token[0] === self::T_NS_SEPARATOR1
-                        || $token[0] === self::T_NS_SEPARATOR2
-                    ) {
-                        $namespaceBuffer[] = $token[1];
-                    }
-            }
-
-            $position++;
+            return class_exists($fqcn) ? $fqcn : null;
         }
 
         return null;
