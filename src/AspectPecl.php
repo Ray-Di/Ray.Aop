@@ -43,24 +43,7 @@ final class AspectPecl
      */
     public function weave(string $classDir, array $mathcers): void
     {
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($classDir)
-        );
-
-        /** @var SplFileInfo[] $files */
-        foreach ($files as $file) {
-            if ($file->isDir() || $file->getExtension() !== 'php') {
-                continue;
-            }
-
-            $className = ClassName::from($file->getPathname());
-
-            if ($className === null) {
-                continue;
-            }
-
-            assert(class_exists($className), $className);
-
+        foreach (new ClassList($classDir) as $className) {
             $boundInterceptors = $this->getBoundInterceptors($className, $mathcers);
             $this->applyInterceptors($boundInterceptors);
         }
