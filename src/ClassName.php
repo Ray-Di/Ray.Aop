@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Ray\Aop;
 
-use function assert;
 use function count;
 use function file_exists;
 use function file_get_contents;
