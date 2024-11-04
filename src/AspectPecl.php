@@ -43,10 +43,6 @@ final class AspectPecl
      */
     public function weave(string $classDir, array $mathcers): void
     {
-        if (! extension_loaded('rayaop')) {
-            throw new RuntimeException('Ray.Aop extension is not loaded. Cannot use weave() method.'); // @codeCoverageIgnore
-        }
-
         $files = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($classDir)
         );
