@@ -16,6 +16,7 @@ use function file_get_contents;
 use function is_array;
 use function token_get_all;
 
+use function var_dump;
 use const TOKEN_PARSE;
 
 /** @implements IteratorAggregate<class-string> */
@@ -40,6 +41,9 @@ final class ClassList implements IteratorAggregate
 
             switch ($token[1]) {
                 case 'namespace':
+                    var_dump('=====');
+                    var_dump($tokens[$position + 2]);
+                    var_dump($tokens);
                     $namespace = $tokens[$position + 2][1];
                     $position += 2;
                     continue 2;
