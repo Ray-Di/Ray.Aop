@@ -107,7 +107,7 @@ final class AspectPecl
     private function applyInterceptors(array $boundInterceptors): void
     {
         $dispatcher = new PeclDispatcher($boundInterceptors);
-        assert(function_exists('method_intercept')); // PECL Ray.Aop extension
+        assert(function_exists('\method_intercept')); // PECL Ray.Aop extension
 
         foreach ($boundInterceptors as $className => $methods) {
             $methodNames = array_keys($methods);
