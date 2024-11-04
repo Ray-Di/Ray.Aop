@@ -70,6 +70,11 @@ jobs:
         run: |
           php -dextension=./ext-rayaop/modules/rayaop.so vendor/bin/phpunit --coverage-clover=coverage.xml
 
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Run Valgrind memory check
         if: steps.build_extension.outcome == 'failure' || steps.run_pecl_demo.outcome == 'failure'
         run: |
