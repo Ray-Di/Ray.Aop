@@ -14,8 +14,8 @@ use function class_exists;
 use function file_get_contents;
 use function preg_match;
 use function preg_replace;
-use function str_contains;
 use function str_replace;
+use function strpos;
 use function strstr;
 use function trim;
 
