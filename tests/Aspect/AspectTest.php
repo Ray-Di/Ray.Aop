@@ -7,7 +7,6 @@ namespace Ray\Aop;
 use PHPUnit\Framework\TestCase;
 use Ray\Aop\Annotation\FakeClassMarker;
 use Ray\Aop\Annotation\FakeMarker;
-use Ray\Aop\Aspect\Fake\src\FakeMyClass;
 use Ray\Aop\Exception\NotWritableException;
 use Ray\Aop\Matcher\AnyMatcher;
 use Ray\Aop\Matcher\StartsWithMatcher;
@@ -69,7 +68,7 @@ class AspectTest extends TestCase
             new StartsWithMatcher('my'),
             [new FakeMyInterceptor()]
         );
-        $this->aspect->weave(__DIR__ . '/Fake/src');
+        $this->aspect->weave(__DIR__ . '/Fake');
         // here we are testing the interception!
         $myClass = new FakePeclClass();
         $result = $myClass->myMethod();

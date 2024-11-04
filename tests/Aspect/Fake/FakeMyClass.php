@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Ray\Aop\Aspect\Fake\src;
+namespace Ray\Aop;
 
 class FakeMyClass
 {
