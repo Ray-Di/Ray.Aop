@@ -43,6 +43,7 @@ final class ClassName
             return null;
         }
 
+        /** @var Tokens $tokens */
         $tokens = token_get_all(file_get_contents($filePath)); // @phpstan-ignore-line
         $count = count($tokens);
         $position = 0;
