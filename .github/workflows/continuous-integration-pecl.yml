@@ -22,7 +22,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-          extensions: mbstring, intl
+          extensions: mbstring, intl, dom, json, libxml, xml, xmlwriter, tokenizer
           tools: phpize, composer:v2
 
       - name: Install build tools and Valgrind
@@ -45,7 +45,7 @@ jobs:
 
       # Combined step for PHPUnit and Valgrind analysis
       - name: Run Tests with Valgrind
-        if: success() || failure() # Run regardless of previous step status
+        if: success() || failure()
         id: test_with_valgrind
         run: |
           # Create Valgrind suppression file
@@ -86,19 +86,13 @@ jobs:
           # Display Valgrind log
           echo "=== Valgrind Log ==="
           cat valgrind.log
-          
-          # Check for core dump in case of crash
-          if [ -f core ]; then
-            echo "=== Core Dump Analysis ==="
-            gdb php core -ex "bt" -ex "quit"
-          fi
 
-      # Upload debug information
+      # Upload debug information with unique names per PHP version
       - name: Upload debug logs
-        if: always() # Always run this step
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: debug-logs
+          name: debug-logs-php${{ matrix.php-version }}
           path: |
             valgrind.log
             coverage.xml
@@ -116,6 +110,7 @@ jobs:
       - name: Final status check
         if: always()
         run: |
+          echo "PHP Version: ${{ matrix.php-version }}"
           echo "Extension build status: ${{ steps.build_extension.outcome }}"
           echo "Test with Valgrind status: ${{ steps.test_with_valgrind.outcome }}"
           
@@ -125,9 +120,4 @@ jobs:
             grep "ERROR SUMMARY:" valgrind.log || true
             grep "definitely lost:" valgrind.log || true
             grep "indirectly lost:" valgrind.log || true
-          fi
-          
-          # Report segmentation fault details
-          if [ -f core ]; then
-            echo "Segmentation fault detected. Please check debug information."
           fi
