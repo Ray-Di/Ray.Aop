@@ -41,9 +41,7 @@ final class ClassName
             return null;
         }
 
-        /** @var string */
         $namespace = '';
-        /** @var string|null */
         $className = null;
         /** @var array<int, array{0: int, 1: string, 2: int}|string> $tokens */
         $tokens = token_get_all(file_get_contents($filePath)); // @phpstan-ignore-line
@@ -64,7 +62,6 @@ final class ClassName
                 $token = $tokens[$i];
                 if (is_array($token)) {
                     if ($token[0] === self::T_NAME_QUALIFIED) {
-                        /** @var string */
                         $namespace = $token[1];
                     } elseif ($token[0] === T_STRING) {
                         /** @var list<string> $namespaceParts */
@@ -90,7 +87,6 @@ final class ClassName
                             $i++;
                         }
 
-                        /** @var string */
                         $namespace = implode('', $namespaceParts);
                     }
                 }
@@ -114,7 +110,6 @@ final class ClassName
                 }
 
                 if ($i < $count && is_array($tokens[$i])) {
-                    /** @var string */
                     $className = $tokens[$i][1];
                     break;
                 }
@@ -127,7 +122,7 @@ final class ClassName
             return null;
         }
 
-        /** @var string */
+        /** @var string $namespace */
         return $namespace !== '' ? $namespace . '\\' . $className : $className;
     }
 }
