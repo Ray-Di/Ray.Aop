@@ -4,25 +4,21 @@ declare(strict_types=1);
 
 namespace Ray\Aop\Demo;
 
-use Ray\Aop\Bind;
-use Ray\Aop\Compiler;
+use Ray\Aop\Aspect;
 use Ray\Aop\Matcher;
-use Ray\Aop\Pointcut;
 use RuntimeException;
 
 use const PHP_EOL;
 
 require __DIR__ . '/bootstrap.php';
 
-$pointcut = new Pointcut(
+$aspect = new Aspect(__DIR__ . '/tmp');
+$aspect->bind(
     (new Matcher())->any(),
     new IsContainsMatcher('charge'),
     [new WeekendBlocker()]
 );
-$bind = new Bind();
-$bind->bind(RealBillingService::class, [$pointcut]);
-$compiler = new Compiler(__DIR__ . '/tmp');
-$billingService = $compiler->newInstance(RealBillingService::class, [], $bind);
+$billingService = $aspect->newInstance(RealBillingService::class);
 
 try {
     echo $billingService->chargeOrder();
