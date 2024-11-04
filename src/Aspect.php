@@ -16,7 +16,7 @@ use function sys_get_temp_dir;
 /**
  * Aspect class manages aspect weaving and method interception
  *
-     * @psalm-type MethodInterceptors = array<array-key, MethodInterceptor>
+ * @psalm-type MethodInterceptors = array<array-key, MethodInterceptor>
  * @psalm-type MethodBindings = array<string, MethodInterceptors>
  * @psalm-type ClassBindings = array<class-string, MethodBindings>
  * @psalm-type MatcherConfig = array{
