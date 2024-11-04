@@ -43,6 +43,7 @@ final class Aspect
      * Temporary directory for generated proxy classes
      *
      * @var non-empty-string
+     * @readonly
      */
     private $tmpDir;
 

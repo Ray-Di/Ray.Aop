@@ -24,7 +24,10 @@ final class Bind implements BindInterface
      */
     private $bindings = [];
 
-    /** @var MethodMatch */
+    /**
+     * @var MethodMatch
+     * @readonly
+     */
     private $methodMatch;
 
     public function __construct()
