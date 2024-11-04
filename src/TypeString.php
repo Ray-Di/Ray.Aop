@@ -77,6 +77,7 @@ final class TypeString
         return implode(' & ', $typeStrings);
     }
 
+    /** @psalm-pure */
     public function getUnionType(ReflectionUnionType $type): string
     {
         $types = array_map(static function ($t) {
