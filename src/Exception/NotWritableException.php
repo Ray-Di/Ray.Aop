@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Ray\Aop\Exception;
 
-use LogicException;
+use RuntimeException;
 
-class NotWritableException extends LogicException implements ExceptionInterface
+class NotWritableException extends RuntimeException implements ExceptionInterface
 {
 }

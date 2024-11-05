@@ -36,7 +36,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Ray\\Aop\\": ["tests/", "tests/Fake/", "tests/Aspect", "tests/Aspect/Fake", "tests/Aspect/Fake/src"]
+            "Ray\\Aop\\": ["tests/", "tests/Fake/", "tests/Aspect", "tests/Aspect/Fake"]
         },
         "files": [
             "src-mock/method_intercept.php",
