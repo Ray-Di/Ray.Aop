@@ -24,12 +24,8 @@
 
 ```php
 <?php
-/**
- * NotOnWeekends
- *
- * @Annotation
- * @Target("METHOD")
- */
+<?php
+#[Attribute(Attribute::TARGET_METHOD)]
 final class NotOnWeekends
 {
 }
@@ -41,9 +37,7 @@ final class NotOnWeekends
 <?php
 class RealBillingService
 {
-    /**
-     * @NotOnWeekends
-     */
+    #[NotOnWeekends] 
     public function chargeOrder(PizzaOrder $order, CreditCard $creditCard)
     {
 ```
@@ -219,7 +213,7 @@ Ray.Aopの推奨インストール方法は、[Composer](https://github.com/comp
 
 ```bash
 # Ray.Aop を依存パッケージとして追加する
-$ composer require ray/aop ~2.0
+$ composer require ray/aop ^2.0
 ```
 
 ### アトリビュートのみ使用（推奨）
