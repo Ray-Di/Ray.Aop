@@ -11,6 +11,10 @@ use Koriym\Attributes\DualReader;
 
 use function sys_get_temp_dir;
 
+/**
+ * ServiceLocator class provides a way to set and retrieve a Reader instance.
+ * It includes mechanisms to lazily initialize the Reader if it hasn't been set.
+ */
 final class ServiceLocator
 {
     /** @var ?Reader */
