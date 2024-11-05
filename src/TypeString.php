@@ -98,10 +98,6 @@ final class TypeString
         return implode('|', $types);
     }
 
-    /**
-     * @psalm-external-mutation-free
-     * @psalm-pure
-     */
     private static function getFqnType(ReflectionNamedType $namedType): string
     {
         $type = $namedType->getName();
