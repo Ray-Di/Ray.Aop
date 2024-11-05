@@ -11,7 +11,7 @@ class AnnotationRealBillingService implements BillingService
     /**
      * @WeekendBlock
      */
-    public function chargeOrder()
+    public function chargeOrder(): string
     {
         return 'Charged.' . PHP_EOL;
     }

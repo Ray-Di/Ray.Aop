@@ -27,6 +27,6 @@ if (! interface_exists(MethodInterceptorInterface::class, false)) {
          *
          * @return mixed The result of the method invocation
          */
-        public function intercept(object $object, string $method, array $params): mixed;
+        public function intercept(string $class, string $method, array $params): mixed;
     }
 }

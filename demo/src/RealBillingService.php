@@ -8,7 +8,7 @@ use const PHP_EOL;
 
 class RealBillingService implements BillingService
 {
-    public function chargeOrder()
+    public function chargeOrder(): string
     {
         return 'Charged.' . PHP_EOL;
     }
