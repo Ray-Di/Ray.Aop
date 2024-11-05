@@ -12,6 +12,7 @@ use function getdate;
 
 class WeekendBlocker implements MethodInterceptor
 {
+    /** {@inheritDoc} */
     public function invoke(MethodInvocation $invocation)
     {
         $today = getdate();

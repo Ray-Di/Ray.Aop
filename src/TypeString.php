@@ -77,7 +77,6 @@ final class TypeString
         return implode(' & ', $typeStrings);
     }
 
-    /** @psalm-pure */
     public function getUnionType(ReflectionUnionType $type): string
     {
         $types = array_map(static function ($t) {
@@ -98,10 +97,6 @@ final class TypeString
         return implode('|', $types);
     }
 
-    /**
-     * @psalm-external-mutation-free
-     * @psalm-pure
-     */
     private static function getFqnType(ReflectionNamedType $namedType): string
     {
         $type = $namedType->getName();
