@@ -226,4 +226,10 @@ SevericeLocator::setReader(new AttributeReader);`
 
 DIとAOPを統合したDIフレームワーク[Ray.Di](https://github.com/ray-di/Ray.Di)もご覧ください。
 
+## 安定性
+
+Ray.Aopはセマンティックバージョニングに従い、後方互換性を保証します。2015年のバージョン2.0以降、PHPの進化に合わせて機能を拡張しながら互換性を維持してきました。今後もこの安定性を維持していきます。
+
+---
+
 * この文書の大部分は [Guice/AOP](https://github.com/google/guice/wiki/AOP) から借用しています。

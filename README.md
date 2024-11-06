@@ -248,6 +248,10 @@ SevericeLocator::setReader(new AttributeReader);`
 
 * See also the DI framework [Ray.Di](https://github.com/ray-di/Ray.Di) which integrates DI and AOP.
 
+## Stability
+
+Ray.Aop follows semantic versioning and ensures backward compatibility. Released in 2015, version 2.0 and its successors have maintained compatibility while evolving with PHP, and we remain committed to this stability.
+
 ---
 
 * Note: This documentation of the part is taken from [Guice/AOP](https://github.com/google/guice/wiki/AOP).
