@@ -9,6 +9,7 @@ use ReflectionMethod;
 use RuntimeException;
 
 use function array_keys;
+use function array_merge;
 use function assert;
 use function class_exists;
 use function extension_loaded;
@@ -77,7 +78,13 @@ final class AspectPecl
                     continue;
                 }
 
-                $bound[$className][$method->getName()] = $matcher['interceptors'];
+                $methodName = $method->getName();
+                if (isset($bound[$className][$methodName])) {
+                    $bound[$className][$methodName] = array_merge($bound[$className][$methodName], $matcher['interceptors']);
+                    continue;
+                }
+
+                $bound[$className][$methodName] = $matcher['interceptors'];
             }
         }
 
