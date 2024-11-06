@@ -9,6 +9,7 @@ use ReflectionMethod;
 use RuntimeException;
 
 use function array_keys;
+use function array_merge;
 use function assert;
 use function class_exists;
 use function extension_loaded;
@@ -35,20 +36,24 @@ final class AspectPecl
      * Weave aspects into classes in the specified directory
      *
      * @param non-empty-string  $classDir Target class directory
-     * @param MatcherConfigList $mathcers List of matchers and interceptors
+     * @param MatcherConfigList $matchers List of matchers and interceptors
      *
      * @throws RuntimeException When Ray.Aop extension is not loaded.
      */
-    public function weave(string $classDir, array $mathcers): void
+    public function weave(string $classDir, array $matchers): void
     {
         foreach (new ClassList($classDir) as $className) {
-            $boundInterceptors = $this->getBoundInterceptors($className, $mathcers);
-            $this->apply($boundInterceptors);
+            $boundInterceptors = $this->getBoundInterceptors($className, $matchers);
+            if ($boundInterceptors === []) {
+                continue;
+            }
+
+            $this->interceptMethods($boundInterceptors);
         }
     }
 
     /**
-     * Process class for interception
+     * Get interceptors bound to class methods based on matchers
      *
      * @param class-string      $className
      * @param MatcherConfigList $matchers
@@ -73,7 +78,13 @@ final class AspectPecl
                     continue;
                 }
 
-                $bound[$className][$method->getName()] = $matcher['interceptors'];
+                $methodName = $method->getName();
+                if (isset($bound[$className][$methodName])) {
+                    $bound[$className][$methodName] = array_merge($bound[$className][$methodName], $matcher['interceptors']);
+                    continue;
+                }
+
+                $bound[$className][$methodName] = $matcher['interceptors'];
             }
         }
 
@@ -81,11 +92,11 @@ final class AspectPecl
     }
 
     /**
-     * Apply interceptors to bound methods
+     * Intercept methods with bounded interceptors using PECL extension
      *
      * @param ClassBoundInterceptors $boundInterceptors
      */
-    private function apply(array $boundInterceptors): void
+    private function interceptMethods(array $boundInterceptors): void
     {
         $dispatcher = new PeclDispatcher($boundInterceptors);
         assert(function_exists('\method_intercept')); // PECL Ray.Aop extension
