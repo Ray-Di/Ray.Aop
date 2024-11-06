@@ -27,7 +27,7 @@ final class AspectPecl
 {
     public function __construct()
     {
-        if (! extension_loaded('rayaop')) {
+        if (!extension_loaded('rayaop')) {
             throw new RuntimeException('Ray.Aop extension is not loaded. Cannot use weave() method.'); // @codeCoverageIgnore
         }
     }
@@ -36,14 +36,14 @@ final class AspectPecl
      * Weave aspects into classes in the specified directory
      *
      * @param non-empty-string  $classDir Target class directory
-     * @param MatcherConfigList $mathcers List of matchers and interceptors
+     * @param MatcherConfigList $matchers List of matchers and interceptors
      *
      * @throws RuntimeException When Ray.Aop extension is not loaded.
      */
-    public function weave(string $classDir, array $mathcers): void
+    public function weave(string $classDir, array $matchers): void
     {
         foreach (new ClassList($classDir) as $className) {
-            $boundInterceptors = $this->getBoundInterceptors($className, $mathcers);
+            $boundInterceptors = $this->getBoundInterceptors($className, $matchers);
             if ($boundInterceptors === []) {
                 continue;
             }
@@ -67,14 +67,14 @@ final class AspectPecl
 
         $bound = [];
         foreach ($matchers as $matcher) {
-            if (! $matcher['classMatcher']->matchesClass($reflection, $matcher['classMatcher']->getArguments())) {
+            if (!$matcher['classMatcher']->matchesClass($reflection, $matcher['classMatcher']->getArguments())) {
                 continue;
             }
 
             /** @var ReflectionMethod[] $methods */
             $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
             foreach ($methods as $method) {
-                if (! $matcher['methodMatcher']->matchesMethod($method, $matcher['methodMatcher']->getArguments())) {
+                if (!$matcher['methodMatcher']->matchesMethod($method, $matcher['methodMatcher']->getArguments())) {
                     continue;
                 }
 
