@@ -43,6 +43,10 @@ final class AspectPecl
     {
         foreach (new ClassList($classDir) as $className) {
             $boundInterceptors = $this->getBoundInterceptors($className, $mathcers);
+            if ($boundInterceptors === []) {
+                continue;
+            }
+
             $this->apply($boundInterceptors);
         }
     }
