@@ -27,7 +27,7 @@ final class AspectPecl
 {
     public function __construct()
     {
-        if (!extension_loaded('rayaop')) {
+        if (! extension_loaded('rayaop')) {
             throw new RuntimeException('Ray.Aop extension is not loaded. Cannot use weave() method.'); // @codeCoverageIgnore
         }
     }
@@ -48,12 +48,12 @@ final class AspectPecl
                 continue;
             }
 
-            $this->apply($boundInterceptors);
+            $this->interceptMethods($boundInterceptors);
         }
     }
 
     /**
-     * Process class for interception
+     * Get interceptors bound to class methods based on matchers
      *
      * @param class-string      $className
      * @param MatcherConfigList $matchers
@@ -67,14 +67,14 @@ final class AspectPecl
 
         $bound = [];
         foreach ($matchers as $matcher) {
-            if (!$matcher['classMatcher']->matchesClass($reflection, $matcher['classMatcher']->getArguments())) {
+            if (! $matcher['classMatcher']->matchesClass($reflection, $matcher['classMatcher']->getArguments())) {
                 continue;
             }
 
             /** @var ReflectionMethod[] $methods */
             $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
             foreach ($methods as $method) {
-                if (!$matcher['methodMatcher']->matchesMethod($method, $matcher['methodMatcher']->getArguments())) {
+                if (! $matcher['methodMatcher']->matchesMethod($method, $matcher['methodMatcher']->getArguments())) {
                     continue;
                 }
 
@@ -92,11 +92,11 @@ final class AspectPecl
     }
 
     /**
-     * Apply interceptors to bound methods
+     * Intercept methods with bounded interceptors using PECL extension
      *
      * @param ClassBoundInterceptors $boundInterceptors
      */
-    private function apply(array $boundInterceptors): void
+    private function interceptMethods(array $boundInterceptors): void
     {
         $dispatcher = new PeclDispatcher($boundInterceptors);
         assert(function_exists('\method_intercept')); // PECL Ray.Aop extension
