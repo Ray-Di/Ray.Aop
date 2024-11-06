@@ -79,7 +79,7 @@ $aspect->bind(
 
 $billing = $aspect->newInstance(RealBillingService::class);
 try {
-    echo $billing->chargeOrder();
+    echo $billing->chargeOrder(); // Interceptors applied
 } catch (\RuntimeException $e) {
     echo $e->getMessage() . "\n";
     exit(1);
@@ -103,7 +103,11 @@ $aspect->bind(
     (new Matcher())->annotatedWith(NotOnWeekends::class),
     [new WeekendBlocker()]
 );
-$aspect->weave(__DIR__ . '/src'); // Weave the aspects to all classes in the directory that match the matcher.
+// Weave aspects into all matching classes in the source directory
+$aspect->weave('/path/to/src');
+
+// Or weave into specific target directory
+$aspect->weave('/path/to/target');
 
 $billing = new RealBillingService();
 echo $billing->chargeOrder(); // Interceptors applied
