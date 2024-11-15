@@ -20,6 +20,7 @@ use function str_replace;
 use function var_export;
 
 use const PHP_EOL;
+use const PHP_MAJOR_VERSION;
 
 final class MethodSignatureString
 {
@@ -27,7 +28,8 @@ final class MethodSignatureString
     private const NULLABLE_PHP7 = '?';
     private const INDENT = '    ';
 
-    private TypeString $typeString;
+    /** @var TypeString  */
+    private $typeString;
 
     public function __construct(int $phpVersion)
     {
@@ -61,6 +63,10 @@ final class MethodSignatureString
     /** @param array<string> $signatureParts */
     private function addAttributes(ReflectionMethod $method, array &$signatureParts): void
     {
+        if (PHP_MAJOR_VERSION < 8) {
+            return;
+        }
+
         $attributes = $method->getAttributes();
         foreach ($attributes as $attribute) {
             $signatureParts[] = sprintf('    #[%s]', $this->formatAttributeStr($attribute)) . PHP_EOL;
@@ -155,6 +161,10 @@ final class MethodSignatureString
 
     public function getAttributeStr(ReflectionParameter $param): string
     {
+        if (PHP_MAJOR_VERSION < 8) {
+            return '';
+        }
+
         $attributesStr = '';
         $attributes = $param->getAttributes();
         if (! empty($attributes)) {
