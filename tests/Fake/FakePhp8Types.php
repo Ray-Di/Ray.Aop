@@ -8,6 +8,8 @@ use Ray\Aop\Annotation\FakeMarker4;
 use Ray\Aop\Annotation\FakeMarker5;
 use Ray\Aop\Annotation\FakeMarker6;
 use Ray\Aop\Annotation\FakeMarkerName;
+use Ray\Aop\Attribute\FakeAttr1;
+use Ray\Aop\Attribute\FakeAttr2;
 
 class FakePhp8Types implements FakeNullInterface, \Ray\Aop\FakeNullInterface1
 {
@@ -69,4 +71,12 @@ class FakePhp8Types implements FakeNullInterface, \Ray\Aop\FakeNullInterface1
 
     #[FakeMarker6(fruit1: FakePhp81Enum::Apple, fruit2: FakePhp81Enum::Orange)]
     public function method24() {}
+
+    // Method with attribute
+    public function method25(
+        #[FakeAttr1]
+        $a,
+        #[FakeAttr1, FakeAttr2(name: 'famicon', age: 40)]
+        $b
+    ): void {}
 }
