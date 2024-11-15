@@ -76,7 +76,7 @@ class FakePhp8Types implements FakeNullInterface, \Ray\Aop\FakeNullInterface1
     public function method25(
         #[FakeAttr1]
         $a,
-        #[FakeAttr1, FakeAttr2]
+        #[FakeAttr1, FakeAttr2(name: 'famicon', age: 40)]
         $b
     ): void {}
 }
