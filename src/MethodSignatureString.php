@@ -156,10 +156,6 @@ final class MethodSignatureString
 
     public function getAttributeStr(ReflectionParameter $param): string
     {
-        if (PHP_MAJOR_VERSION < 8) {
-            return '';
-        }
-
         $attributesStr = '';
         $attributes = $param->getAttributes();
         if (! empty($attributes)) {
