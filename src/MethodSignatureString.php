@@ -165,7 +165,7 @@ final class MethodSignatureString
         if (! empty($attributes)) {
             $attributeStrings = [];
             foreach ($attributes as $attribute) {
-                $attributeStrings[] = sprintf('#[%s]', $attribute->getName());
+                $attributeStrings[] = sprintf('#[\%s]', $attribute->getName());
             }
 
             $attributesStr = implode(' ', $attributeStrings) . ' ';

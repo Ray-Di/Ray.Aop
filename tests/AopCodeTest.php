@@ -91,7 +91,7 @@ class AopCodeTest extends TestCase
       public function method23()', $code);
         $this->assertStringContainsString('#[\\Ray\\Aop\\Annotation\\FakeMarker6(fruit1: \\Ray\\Aop\\FakePhp81Enum::Apple, fruit2: \\Ray\\Aop\\FakePhp81Enum::Orange)]
       public function method24()', $code);
-        $this->assertStringContainsString('public function method25(#[Ray\Aop\Attribute\FakeAttr1] $a, #[Ray\Aop\Attribute\FakeAttr1] #[Ray\Aop\Attribute\FakeAttr2] $b): void', $code);
+        $this->assertStringContainsString('public function method25(#[\Ray\Aop\Attribute\FakeAttr1] $a, #[\Ray\Aop\Attribute\FakeAttr1] #[\Ray\Aop\Attribute\FakeAttr2] $b): void', $code);
     }
 
     /** @requires PHP 8.2 */
