@@ -140,11 +140,7 @@ final class MethodSignatureString
     private function generateParameterCode(ReflectionParameter $param): string
     {
         // Support attributes
-        $attributesStr = '';
-        if (PHP_MAJOR_VERSION >= 8) {
-            $attributesStr = $this->getAttributeStr($param);
-        }
-
+        $attributesStr = $this->getAttributeStr($param);
         $typeStr = ($this->typeString)($param->getType());
         $typeStrWithSpace = $typeStr ? $typeStr . ' ' : $typeStr;
         $variadicStr = $param->isVariadic() ? '...' : '';

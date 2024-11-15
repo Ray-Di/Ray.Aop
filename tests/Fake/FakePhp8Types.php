@@ -9,6 +9,7 @@ use Ray\Aop\Annotation\FakeMarker5;
 use Ray\Aop\Annotation\FakeMarker6;
 use Ray\Aop\Annotation\FakeMarkerName;
 use Ray\Aop\Attribute\FakeAttr1;
+use Ray\Aop\Attribute\FakeAttr2;
 
 class FakePhp8Types implements FakeNullInterface, \Ray\Aop\FakeNullInterface1
 {
@@ -75,7 +76,7 @@ class FakePhp8Types implements FakeNullInterface, \Ray\Aop\FakeNullInterface1
     public function method25(
         #[FakeAttr1]
         $a,
-        #[FakeAttri1, FakeAttr2]
+        #[FakeAttr1, FakeAttr2]
         $b
     ): void {}
 }
