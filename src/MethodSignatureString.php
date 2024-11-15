@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ray\Aop;
 
 use Reflection;
+use ReflectionAttribute;
 use ReflectionMethod;
 use ReflectionParameter;
 use UnitEnum;
@@ -19,21 +20,18 @@ use function str_replace;
 use function var_export;
 
 use const PHP_EOL;
-use const PHP_MAJOR_VERSION;
 
 final class MethodSignatureString
 {
-    private const PHP_VERSION_8 = 80000;
     private const NULLABLE_PHP8 = 'null|';
     private const NULLABLE_PHP7 = '?';
     private const INDENT = '    ';
 
-    /** @var TypeString */
-    private $typeString;
+    private TypeString $typeString;
 
     public function __construct(int $phpVersion)
     {
-        $nullableStr = $phpVersion >= self::PHP_VERSION_8 ? self::NULLABLE_PHP8 : self::NULLABLE_PHP7;
+        $nullableStr = $phpVersion >= 80000 ? self::NULLABLE_PHP8 : self::NULLABLE_PHP7;
         $this->typeString = new TypeString($nullableStr);
     }
 
@@ -63,20 +61,9 @@ final class MethodSignatureString
     /** @param array<string> $signatureParts */
     private function addAttributes(ReflectionMethod $method, array &$signatureParts): void
     {
-        if (PHP_MAJOR_VERSION < 8) {
-            return;
-        }
-
         $attributes = $method->getAttributes();
         foreach ($attributes as $attribute) {
-            $argsList = $attribute->getArguments();
-            $formattedArgs = [];
-            /** @var mixed $value */
-            foreach ($argsList as $name => $value) {
-                $formattedArgs[] = $this->formatArg($name, $value);
-            }
-
-            $signatureParts[] = sprintf('    #[\\%s(%s)]', $attribute->getName(), implode(', ', $formattedArgs)) . PHP_EOL;
+            $signatureParts[] = sprintf('    #[%s]', $this->formatAttributeStr($attribute)) . PHP_EOL;
         }
 
         if (empty($signatureParts)) {
@@ -84,6 +71,19 @@ final class MethodSignatureString
         }
 
         $signatureParts[] = self::INDENT;
+    }
+
+    /** @param ReflectionAttribute<object> $attribute */
+    private function formatAttributeStr(ReflectionAttribute $attribute): string
+    {
+        $argsList = $attribute->getArguments();
+        $formattedArgs = [];
+        /** @var scalar $value */
+        foreach ($argsList as $name => $value) {
+            $formattedArgs[] = $this->formatArg($name, $value);
+        }
+
+        return sprintf('\\%s(%s)', $attribute->getName(), implode(', ', $formattedArgs));
     }
 
     /**
@@ -139,7 +139,6 @@ final class MethodSignatureString
 
     private function generateParameterCode(ReflectionParameter $param): string
     {
-        // Support attributes
         $attributesStr = $this->getAttributeStr($param);
         $typeStr = ($this->typeString)($param->getType());
         $typeStrWithSpace = $typeStr ? $typeStr . ' ' : $typeStr;
@@ -161,7 +160,7 @@ final class MethodSignatureString
         if (! empty($attributes)) {
             $attributeStrings = [];
             foreach ($attributes as $attribute) {
-                $attributeStrings[] = sprintf('#[\%s]', $attribute->getName());
+                $attributeStrings[] = sprintf('#[%s]', $this->formatAttributeStr($attribute));
             }
 
             $attributesStr = implode(' ', $attributeStrings) . ' ';
