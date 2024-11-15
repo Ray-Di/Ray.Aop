@@ -139,6 +139,12 @@ final class MethodSignatureString
 
     private function generateParameterCode(ReflectionParameter $param): string
     {
+        // Support attributes
+        $attributesStr = '';
+        if (PHP_MAJOR_VERSION >= 8) {
+            $attributesStr = $this->getAttributeStr($param);
+        }
+
         $typeStr = ($this->typeString)($param->getType());
         $typeStrWithSpace = $typeStr ? $typeStr . ' ' : $typeStr;
         $variadicStr = $param->isVariadic() ? '...' : '';
@@ -149,6 +155,26 @@ final class MethodSignatureString
             $defaultStr = ' = ' . str_replace(["\r", "\n"], '', $default);
         }
 
-        return "{$typeStrWithSpace}{$referenceStr}{$variadicStr}\${$param->getName()}{$defaultStr}";
+        return "{$attributesStr}{$typeStrWithSpace}{$referenceStr}{$variadicStr}\${$param->getName()}{$defaultStr}";
+    }
+
+    public function getAttributeStr(ReflectionParameter $param): string
+    {
+        if (PHP_MAJOR_VERSION < 8) {
+            return '';
+        }
+
+        $attributesStr = '';
+        $attributes = $param->getAttributes();
+        if (! empty($attributes)) {
+            $attributeStrings = [];
+            foreach ($attributes as $attribute) {
+                $attributeStrings[] = sprintf('#[%s]', $attribute->getName());
+            }
+
+            $attributesStr = implode(' ', $attributeStrings) . ' ';
+        }
+
+        return $attributesStr;
     }
 }
