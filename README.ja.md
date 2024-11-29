@@ -24,7 +24,6 @@
 
 ```php
 <?php
-<?php
 #[Attribute(Attribute::TARGET_METHOD)]
 final class NotOnWeekends
 {
