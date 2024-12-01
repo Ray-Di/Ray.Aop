@@ -6,15 +6,23 @@ namespace Ray\Aop\Matcher;
 
 use ArrayObject;
 use Ray\Aop\AbstractMatcher;
+use Ray\Aop\Types;
 use ReflectionClass;
 use ReflectionMethod;
 
 use function in_array;
 use function strpos;
 
+/**
+ * @psalm-import-type Arguments from Types
+ * @psalm-import-type BuiltinMethodsNames from Types
+ */
 final class AnyMatcher extends AbstractMatcher
 {
-    /** @var string[] */
+    /**
+     * @var BuiltinMethodsNames
+     * @readonly
+     */
     private static $builtinMethods = [];
 
     public function __construct()

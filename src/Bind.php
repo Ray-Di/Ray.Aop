@@ -11,9 +11,10 @@ use function serialize;
 /**
  * Bind class manages method interception bindings
  *
- * @psalm-import-type MethodInterceptors from Aspect
- * @psalm-import-type MethodBindings from Aspect
- * @psalm-type Pointcuts = array<Pointcut>
+ * @psalm-import-type MethodInterceptors from Types
+ * @psalm-import-type MethodBindings from Types
+ * @psalm-import-type Pointcuts from Types
+ * @psalm-import-type MethodName from Types
  */
 final class Bind implements BindInterface
 {
@@ -69,7 +70,7 @@ final class Bind implements BindInterface
     /**
      * Bind interceptors to a method
      *
-     * @param string             $method       Method name
+     * @param MethodName         $method       Method name
      * @param MethodInterceptors $interceptors List of interceptors
      */
     public function bindInterceptors(string $method, array $interceptors): BindInterface

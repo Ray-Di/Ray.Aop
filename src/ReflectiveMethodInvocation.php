@@ -14,10 +14,10 @@ use function call_user_func_array;
 use function is_callable;
 
 /**
+ * @psalm-import-type ArgumentList from Types
+ * @psalm-import-type NamedArguments from Types
+ * @psalm-import-type InterceptorList from Types
  * @template T of object
- * @psalm-type ArgumentList = ArrayObject<int, mixed>
- * @psalm-type NamedArguments = ArrayObject<non-empty-string, mixed>
- * @psalm-type InterceptorList = array<MethodInterceptor>
  * @implements MethodInvocation<T>
  */
 final class ReflectiveMethodInvocation implements MethodInvocation

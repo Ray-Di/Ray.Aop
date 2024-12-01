@@ -16,16 +16,13 @@ use function sys_get_temp_dir;
 /**
  * Aspect class manages aspect weaving and method interception
  *
- * @psalm-type MethodInterceptors = array<array-key, MethodInterceptor>
- * @psalm-type MethodBindings = array<string, MethodInterceptors>
- * @psalm-type ClassBindings = array<class-string, MethodBindings>
- * @psalm-type MatcherConfig = array{
- *   classMatcher: AbstractMatcher,
- *   methodMatcher: AbstractMatcher,
- *   interceptors: MethodInterceptors
- * }
- * @psalm-type MatcherConfigList = array<array-key, MatcherConfig>
- * @psalm-type Arguments = array<array-key, mixed>
+ * @psalm-import-type MethodInterceptors from Types
+ * @psalm-import-type MethodBindings from Types
+ * @psalm-import-type ClassBindings from Types
+ * @psalm-import-type MatcherConfig from Types
+ * @psalm-import-type MatcherConfigList from Types
+ * @psalm-import-type Arguments from Types
+ * @psalm-import-type MethodName from Types
  */
 final class Aspect
 {
@@ -135,7 +132,9 @@ final class Aspect
                     continue; // @codeCoverageIgnore
                 }
 
-                $bind->bindInterceptors($method->getName(), $matcher['interceptors']);
+                /** @var MethodName $methodName */
+                $methodName = $method->getName();
+                $bind->bindInterceptors($methodName, $matcher['interceptors']);
             }
         }
 

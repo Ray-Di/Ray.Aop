@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Ray\Aop;
 
 /**
- * @psalm-import-type MethodInterceptors from Aspect
- * @psalm-import-type MethodBindings from Aspect
- * @psalm-import-type ClassBindings from Aspect
- * @psalm-import-type MatcherConfig from Aspect
- * @psalm-type ConstructorArguments = list<mixed>
+ * @psalm-import-type MethodInterceptors from Types
+ * @psalm-import-type MethodBindings from Types
+ * @psalm-import-type ClassBindings from Types
+ * @psalm-import-type MatcherConfig from Types
+ * @psalm-import-type ConstructorArguments from Types
  */
 interface CompilerInterface
 {

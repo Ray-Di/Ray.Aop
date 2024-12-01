@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ray\Aop;
 
+/** @psalm-import-type MethodName from Types */
 interface BindInterface
 {
     /**
@@ -17,6 +18,7 @@ interface BindInterface
     /**
      * Bind interceptors to method
      *
+     * @param MethodName          $method
      * @param MethodInterceptor[] $interceptors
      */
     public function bindInterceptors(string $method, array $interceptors): self;

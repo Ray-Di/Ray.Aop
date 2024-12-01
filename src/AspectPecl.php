@@ -17,10 +17,10 @@ use function function_exists;
 use function method_intercept;
 
 /**
- * @psalm-type MethodBoundInterceptors = array<non-empty-string, MethodInterceptors>
- * @psalm-type ClassBoundInterceptors = array<class-string, MethodBoundInterceptors>
- * @psalm-import-type MatcherConfigList from Aspect
- * @psalm-import-type MethodInterceptors from Aspect
+ * @psalm-import-type MethodBoundInterceptors from Types
+ * @psalm-import-type ClassBoundInterceptors from Types
+ * @psalm-import-type MatcherConfigList from Types
+ * @psalm-import-type MethodInterceptors from Types
  * @codeCoverageIgnore
  */
 final class AspectPecl
