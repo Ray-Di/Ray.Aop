@@ -28,7 +28,7 @@ use const PHP_VERSION_ID;
  *  AOP (Aspect-Oriented Programming) classes. Handles the binding of
  *  methods and ensures the classes are writable.
  *
- * @psalm-import-type ConstructorArguments from CompilerInterface
+ * @psalm-import-type ConstructorArguments from Types
  */
 final class Compiler implements CompilerInterface
 {

@@ -11,12 +11,12 @@ use function array_key_exists;
 use function get_class;
 
 /**
- * @psalm-import-type MethodInterceptors from Aspect
- * @psalm-import-type MethodBindings from Aspect
- * @psalm-import-type ClassBindings from Aspect
- * @psalm-import-type MatcherConfig from Aspect
- * @psalm-import-type Arguments from Aspect
- * @psalm-import-type Pointcuts from Bind
+ * @psalm-import-type MethodInterceptors from Types
+ * @psalm-import-type MethodBindings from Types
+ * @psalm-import-type ClassBindings from Types
+ * @psalm-import-type MatcherConfig from Types
+ * @psalm-import-type Arguments from Types
+ * @psalm-import-type Pointcuts from Types
  */
 final class MethodMatch
 {

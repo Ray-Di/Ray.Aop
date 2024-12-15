@@ -13,7 +13,7 @@ use function ucwords;
 
 /**
  * @psalm-suppress PropertyNotSetInConstructor
- * @psalm-import-type MatcherArguments from AbstractMatcher
+ * @psalm-import-type MatcherArguments from Types
  */
 class BuiltinMatcher extends AbstractMatcher
 {

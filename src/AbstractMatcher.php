@@ -12,8 +12,8 @@ use function func_get_args;
 /**
  * Abstract matcher base class
  *
- * @psalm-type MatcherArguments = array<array-key, mixed>
- * @psalm-type Arguments = array<array-key, mixed>
+ * @psalm-import-type MatcherArguments from Types
+ * @psalm-import-type Arguments from Types
  */
 abstract class AbstractMatcher
 {
